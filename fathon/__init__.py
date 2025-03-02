@@ -18,6 +18,7 @@ import platform
 import os
     
 from .dfa import DFA
+from .dma import DMA
 from .mfdfa import MFDFA
 from .dcca import DCCA
 from .mfdcca import MFDCCA
