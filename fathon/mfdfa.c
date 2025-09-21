@@ -8858,7 +8858,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_4fitFlucVec(struct __pyx_obj_6fa
  *     @cython.wraparound(False)
  *     @cython.nonecheck(False)
  *     cpdef computeMassExponents(self):             # <<<<<<<<<<<<<<
- *         """Computation of the mass exponents.
+ *         """Computation of the mass exponents tau(q) = q*H(q) - 1.
  * 
  */
 
@@ -9029,7 +9029,7 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMassExponents(struct __pyx
  *     @cython.wraparound(False)
  *     @cython.nonecheck(False)
  *     cpdef computeMassExponents(self):             # <<<<<<<<<<<<<<
- *         """Computation of the mass exponents.
+ *         """Computation of the mass exponents tau(q) = q*H(q) - 1.
  * 
  */
 
@@ -9067,7 +9067,7 @@ PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_6fathon_5mfdfa_5MFDFA_6computeMassExponents, "Computation of the mass exponents.\n\n        Returns\n        -------\n        numpy ndarray\n            Mass exponents.\n        ");
+PyDoc_STRVAR(__pyx_doc_6fathon_5mfdfa_5MFDFA_6computeMassExponents, "Computation of the mass exponents tau(q) = q*H(q) - 1.\n\n        Returns\n        -------\n        numpy ndarray\n            Mass exponents.\n        ");
 static PyMethodDef __pyx_mdef_6fathon_5mfdfa_5MFDFA_7computeMassExponents = {"computeMassExponents", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6fathon_5mfdfa_5MFDFA_7computeMassExponents, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_6fathon_5mfdfa_5MFDFA_6computeMassExponents};
 static PyObject *__pyx_pw_6fathon_5mfdfa_5MFDFA_7computeMassExponents(PyObject *__pyx_v_self, 
 #if CYTHON_METH_FASTCALL
@@ -9132,7 +9132,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_6computeMassExponents(struct __p
  *     @cython.nonecheck(False)
  *     cpdef computeMultifractalSpectrum(self):             # <<<<<<<<<<<<<<
  *         """Computation of the multifractal spectrum.
- * 
+ *         alpha(q_i)  d tau / d q  (finite difference on uniform q grid)
  */
 
 static PyObject *__pyx_pw_6fathon_5mfdfa_5MFDFA_9computeMultifractalSpectrum(PyObject *__pyx_v_self, 
@@ -9236,7 +9236,7 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
     #endif
   }
 
-  /* "fathon/mfdfa.pyx":248
+  /* "fathon/mfdfa.pyx":250
  *         cdef np.ndarray[np.float64_t, ndim=1, mode='c'] tau, alpha, mfSpect
  * 
  *         if self.isComputed:             # <<<<<<<<<<<<<<
@@ -9245,7 +9245,7 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
  */
   if (__pyx_v_self->isComputed) {
 
-    /* "fathon/mfdfa.pyx":249
+    /* "fathon/mfdfa.pyx":251
  * 
  *         if self.isComputed:
  *             if len(self.qList) > 1:             # <<<<<<<<<<<<<<
@@ -9254,21 +9254,21 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
  */
     __pyx_t_1 = ((PyObject *)__pyx_v_self->qList);
     __Pyx_INCREF(__pyx_t_1);
-    __pyx_t_6 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 249, __pyx_L1_error)
+    __pyx_t_6 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 251, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_t_7 = (__pyx_t_6 > 1);
     if (likely(__pyx_t_7)) {
 
-      /* "fathon/mfdfa.pyx":250
+      /* "fathon/mfdfa.pyx":252
  *         if self.isComputed:
  *             if len(self.qList) > 1:
  *                 tau = self.computeMassExponents()             # <<<<<<<<<<<<<<
  *                 alpha = np.diff(tau) / (self.qList[1] - self.qList[0])
  *                 mfSpect = self.qList[0:-1] * alpha - tau[0:-1]
  */
-      __pyx_t_1 = ((struct __pyx_vtabstruct_6fathon_5mfdfa_MFDFA *)__pyx_v_self->__pyx_vtab)->computeMassExponents(__pyx_v_self, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 250, __pyx_L1_error)
+      __pyx_t_1 = ((struct __pyx_vtabstruct_6fathon_5mfdfa_MFDFA *)__pyx_v_self->__pyx_vtab)->computeMassExponents(__pyx_v_self, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 252, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 250, __pyx_L1_error)
+      if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 252, __pyx_L1_error)
       __pyx_t_8 = ((PyArrayObject *)__pyx_t_1);
       {
         __Pyx_BufFmt_StackElem __pyx_stack[1];
@@ -9285,22 +9285,22 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
           __pyx_t_10 = __pyx_t_11 = __pyx_t_12 = 0;
         }
         __pyx_pybuffernd_tau.diminfo[0].strides = __pyx_pybuffernd_tau.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_tau.diminfo[0].shape = __pyx_pybuffernd_tau.rcbuffer->pybuffer.shape[0];
-        if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 250, __pyx_L1_error)
+        if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 252, __pyx_L1_error)
       }
       __pyx_t_8 = 0;
       __pyx_v_tau = ((PyArrayObject *)__pyx_t_1);
       __pyx_t_1 = 0;
 
-      /* "fathon/mfdfa.pyx":251
+      /* "fathon/mfdfa.pyx":253
  *             if len(self.qList) > 1:
  *                 tau = self.computeMassExponents()
  *                 alpha = np.diff(tau) / (self.qList[1] - self.qList[0])             # <<<<<<<<<<<<<<
  *                 mfSpect = self.qList[0:-1] * alpha - tau[0:-1]
  * 
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 251, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 253, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_diff); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 251, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_diff); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 253, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_t_2 = NULL;
@@ -9321,23 +9321,23 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
         PyObject *__pyx_callargs[2] = {__pyx_t_2, ((PyObject *)__pyx_v_tau)};
         __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_5, 1+__pyx_t_5);
         __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 251, __pyx_L1_error)
+        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 253, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       }
-      __pyx_t_3 = __Pyx_GetItemInt(((PyObject *)__pyx_v_self->qList), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 251, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_GetItemInt(((PyObject *)__pyx_v_self->qList), 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 253, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_2 = __Pyx_GetItemInt(((PyObject *)__pyx_v_self->qList), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 251, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_GetItemInt(((PyObject *)__pyx_v_self->qList), 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 253, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_4 = PyNumber_Subtract(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 251, __pyx_L1_error)
+      __pyx_t_4 = PyNumber_Subtract(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 253, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyNumber_Divide(__pyx_t_1, __pyx_t_4); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 251, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyNumber_Divide(__pyx_t_1, __pyx_t_4); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 253, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 251, __pyx_L1_error)
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 253, __pyx_L1_error)
       __pyx_t_8 = ((PyArrayObject *)__pyx_t_2);
       {
         __Pyx_BufFmt_StackElem __pyx_stack[1];
@@ -9354,31 +9354,31 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
           __pyx_t_12 = __pyx_t_11 = __pyx_t_10 = 0;
         }
         __pyx_pybuffernd_alpha.diminfo[0].strides = __pyx_pybuffernd_alpha.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_alpha.diminfo[0].shape = __pyx_pybuffernd_alpha.rcbuffer->pybuffer.shape[0];
-        if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 251, __pyx_L1_error)
+        if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 253, __pyx_L1_error)
       }
       __pyx_t_8 = 0;
       __pyx_v_alpha = ((PyArrayObject *)__pyx_t_2);
       __pyx_t_2 = 0;
 
-      /* "fathon/mfdfa.pyx":252
+      /* "fathon/mfdfa.pyx":254
  *                 tau = self.computeMassExponents()
  *                 alpha = np.diff(tau) / (self.qList[1] - self.qList[0])
  *                 mfSpect = self.qList[0:-1] * alpha - tau[0:-1]             # <<<<<<<<<<<<<<
  * 
  *                 return alpha, mfSpect
  */
-      __pyx_t_2 = __Pyx_PyObject_GetSlice(((PyObject *)__pyx_v_self->qList), 0, -1L, NULL, NULL, &__pyx_slice__15, 1, 1, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 252, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_GetSlice(((PyObject *)__pyx_v_self->qList), 0, -1L, NULL, NULL, &__pyx_slice__15, 1, 1, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 254, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_4 = PyNumber_Multiply(__pyx_t_2, ((PyObject *)__pyx_v_alpha)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 252, __pyx_L1_error)
+      __pyx_t_4 = PyNumber_Multiply(__pyx_t_2, ((PyObject *)__pyx_v_alpha)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 254, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyObject_GetItem(((PyObject *)__pyx_v_tau), __pyx_slice__15); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 252, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_GetItem(((PyObject *)__pyx_v_tau), __pyx_slice__15); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 254, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_1 = PyNumber_Subtract(__pyx_t_4, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 252, __pyx_L1_error)
+      __pyx_t_1 = PyNumber_Subtract(__pyx_t_4, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 254, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 252, __pyx_L1_error)
+      if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 254, __pyx_L1_error)
       __pyx_t_8 = ((PyArrayObject *)__pyx_t_1);
       {
         __Pyx_BufFmt_StackElem __pyx_stack[1];
@@ -9395,13 +9395,13 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
           __pyx_t_10 = __pyx_t_11 = __pyx_t_12 = 0;
         }
         __pyx_pybuffernd_mfSpect.diminfo[0].strides = __pyx_pybuffernd_mfSpect.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_mfSpect.diminfo[0].shape = __pyx_pybuffernd_mfSpect.rcbuffer->pybuffer.shape[0];
-        if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 252, __pyx_L1_error)
+        if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 254, __pyx_L1_error)
       }
       __pyx_t_8 = 0;
       __pyx_v_mfSpect = ((PyArrayObject *)__pyx_t_1);
       __pyx_t_1 = 0;
 
-      /* "fathon/mfdfa.pyx":254
+      /* "fathon/mfdfa.pyx":256
  *                 mfSpect = self.qList[0:-1] * alpha - tau[0:-1]
  * 
  *                 return alpha, mfSpect             # <<<<<<<<<<<<<<
@@ -9409,19 +9409,19 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
  *                 raise ValueError('Error: Number of q moments must be greater than one to compute multifractal spectrum.')
  */
       __Pyx_XDECREF(__pyx_r);
-      __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 254, __pyx_L1_error)
+      __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 256, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_INCREF((PyObject *)__pyx_v_alpha);
       __Pyx_GIVEREF((PyObject *)__pyx_v_alpha);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, ((PyObject *)__pyx_v_alpha))) __PYX_ERR(0, 254, __pyx_L1_error);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, ((PyObject *)__pyx_v_alpha))) __PYX_ERR(0, 256, __pyx_L1_error);
       __Pyx_INCREF((PyObject *)__pyx_v_mfSpect);
       __Pyx_GIVEREF((PyObject *)__pyx_v_mfSpect);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, ((PyObject *)__pyx_v_mfSpect))) __PYX_ERR(0, 254, __pyx_L1_error);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, ((PyObject *)__pyx_v_mfSpect))) __PYX_ERR(0, 256, __pyx_L1_error);
       __pyx_r = __pyx_t_1;
       __pyx_t_1 = 0;
       goto __pyx_L0;
 
-      /* "fathon/mfdfa.pyx":249
+      /* "fathon/mfdfa.pyx":251
  * 
  *         if self.isComputed:
  *             if len(self.qList) > 1:             # <<<<<<<<<<<<<<
@@ -9430,7 +9430,7 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
  */
     }
 
-    /* "fathon/mfdfa.pyx":256
+    /* "fathon/mfdfa.pyx":258
  *                 return alpha, mfSpect
  *             else:
  *                 raise ValueError('Error: Number of q moments must be greater than one to compute multifractal spectrum.')             # <<<<<<<<<<<<<<
@@ -9438,14 +9438,14 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
  *             print('Cannot compute multifractal spectrum, fluctuations vector has not been computed yet.')
  */
     /*else*/ {
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__16, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 256, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__16, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 258, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_Raise(__pyx_t_1, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __PYX_ERR(0, 256, __pyx_L1_error)
+      __PYX_ERR(0, 258, __pyx_L1_error)
     }
 
-    /* "fathon/mfdfa.pyx":248
+    /* "fathon/mfdfa.pyx":250
  *         cdef np.ndarray[np.float64_t, ndim=1, mode='c'] tau, alpha, mfSpect
  * 
  *         if self.isComputed:             # <<<<<<<<<<<<<<
@@ -9454,7 +9454,7 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
  */
   }
 
-  /* "fathon/mfdfa.pyx":258
+  /* "fathon/mfdfa.pyx":260
  *                 raise ValueError('Error: Number of q moments must be greater than one to compute multifractal spectrum.')
  *         else:
  *             print('Cannot compute multifractal spectrum, fluctuations vector has not been computed yet.')             # <<<<<<<<<<<<<<
@@ -9462,7 +9462,7 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
  *     def saveObject(self, outFileName):
  */
   /*else*/ {
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__17, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 258, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__17, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 260, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
@@ -9472,7 +9472,7 @@ static PyObject *__pyx_f_6fathon_5mfdfa_5MFDFA_computeMultifractalSpectrum(struc
  *     @cython.nonecheck(False)
  *     cpdef computeMultifractalSpectrum(self):             # <<<<<<<<<<<<<<
  *         """Computation of the multifractal spectrum.
- * 
+ *         alpha(q_i)  d tau / d q  (finite difference on uniform q grid)
  */
 
   /* function exit code */
@@ -9515,7 +9515,7 @@ PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_6fathon_5mfdfa_5MFDFA_8computeMultifractalSpectrum, "Computation of the multifractal spectrum.\n\n        Returns\n        -------\n        numpy ndarray\n            Singularity strengths.\n        numpy ndarray\n            Multifractal spectrum.\n        ");
+PyDoc_STRVAR(__pyx_doc_6fathon_5mfdfa_5MFDFA_8computeMultifractalSpectrum, "Computation of the multifractal spectrum.\n        alpha(q_i) \342\211\210 d tau / d q  (finite difference on uniform q grid)\n        f(alpha) = q*alpha - tau\n\n        Returns\n        -------\n        numpy ndarray\n            Singularity strengths.\n        numpy ndarray\n            Multifractal spectrum.\n        ");
 static PyMethodDef __pyx_mdef_6fathon_5mfdfa_5MFDFA_9computeMultifractalSpectrum = {"computeMultifractalSpectrum", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6fathon_5mfdfa_5MFDFA_9computeMultifractalSpectrum, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_6fathon_5mfdfa_5MFDFA_8computeMultifractalSpectrum};
 static PyObject *__pyx_pw_6fathon_5mfdfa_5MFDFA_9computeMultifractalSpectrum(PyObject *__pyx_v_self, 
 #if CYTHON_METH_FASTCALL
@@ -9575,7 +9575,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_8computeMultifractalSpectrum(str
   return __pyx_r;
 }
 
-/* "fathon/mfdfa.pyx":260
+/* "fathon/mfdfa.pyx":262
  *             print('Cannot compute multifractal spectrum, fluctuations vector has not been computed yet.')
  * 
  *     def saveObject(self, outFileName):             # <<<<<<<<<<<<<<
@@ -9637,12 +9637,12 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 260, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 262, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "saveObject") < 0)) __PYX_ERR(0, 260, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "saveObject") < 0)) __PYX_ERR(0, 262, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
@@ -9653,7 +9653,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("saveObject", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 260, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("saveObject", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 262, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -9698,35 +9698,35 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("saveObject", 1);
 
-  /* "fathon/mfdfa.pyx":268
+  /* "fathon/mfdfa.pyx":270
  *             Output binary file. `.fathon` extension will be appended to the file name.
  *         """
  *         saveDict = {}             # <<<<<<<<<<<<<<
  *         saveDict['kind'] = 'mfdfa'
  *         saveDict['tsVec'] = self.tsVec.tolist()
  */
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 268, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 270, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_saveDict = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "fathon/mfdfa.pyx":269
+  /* "fathon/mfdfa.pyx":271
  *         """
  *         saveDict = {}
  *         saveDict['kind'] = 'mfdfa'             # <<<<<<<<<<<<<<
  *         saveDict['tsVec'] = self.tsVec.tolist()
  *         try:
  */
-  if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_kind, __pyx_n_u_mfdfa) < 0))) __PYX_ERR(0, 269, __pyx_L1_error)
+  if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_kind, __pyx_n_u_mfdfa) < 0))) __PYX_ERR(0, 271, __pyx_L1_error)
 
-  /* "fathon/mfdfa.pyx":270
+  /* "fathon/mfdfa.pyx":272
  *         saveDict = {}
  *         saveDict['kind'] = 'mfdfa'
  *         saveDict['tsVec'] = self.tsVec.tolist()             # <<<<<<<<<<<<<<
  *         try:
  *             saveDict['n'] = self.n.tolist()
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->tsVec), __pyx_n_s_tolist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 270, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->tsVec), __pyx_n_s_tolist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 272, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -9746,14 +9746,14 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     PyObject *__pyx_callargs[2] = {__pyx_t_3, NULL};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 270, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 272, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
-  if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_tsVec, __pyx_t_1) < 0))) __PYX_ERR(0, 270, __pyx_L1_error)
+  if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_tsVec, __pyx_t_1) < 0))) __PYX_ERR(0, 272, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "fathon/mfdfa.pyx":271
+  /* "fathon/mfdfa.pyx":273
  *         saveDict['kind'] = 'mfdfa'
  *         saveDict['tsVec'] = self.tsVec.tolist()
  *         try:             # <<<<<<<<<<<<<<
@@ -9769,14 +9769,14 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __Pyx_XGOTREF(__pyx_t_7);
     /*try:*/ {
 
-      /* "fathon/mfdfa.pyx":272
+      /* "fathon/mfdfa.pyx":274
  *         saveDict['tsVec'] = self.tsVec.tolist()
  *         try:
  *             saveDict['n'] = self.n.tolist()             # <<<<<<<<<<<<<<
  *         except:
  *             saveDict['n'] = []
  */
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->n), __pyx_n_s_tolist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 272, __pyx_L3_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->n), __pyx_n_s_tolist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 274, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_2);
       __pyx_t_3 = NULL;
       __pyx_t_4 = 0;
@@ -9796,14 +9796,14 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
         PyObject *__pyx_callargs[2] = {__pyx_t_3, NULL};
         __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 272, __pyx_L3_error)
+        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 274, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       }
-      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_n, __pyx_t_1) < 0))) __PYX_ERR(0, 272, __pyx_L3_error)
+      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_n, __pyx_t_1) < 0))) __PYX_ERR(0, 274, __pyx_L3_error)
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-      /* "fathon/mfdfa.pyx":271
+      /* "fathon/mfdfa.pyx":273
  *         saveDict['kind'] = 'mfdfa'
  *         saveDict['tsVec'] = self.tsVec.tolist()
  *         try:             # <<<<<<<<<<<<<<
@@ -9820,7 +9820,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "fathon/mfdfa.pyx":273
+    /* "fathon/mfdfa.pyx":275
  *         try:
  *             saveDict['n'] = self.n.tolist()
  *         except:             # <<<<<<<<<<<<<<
@@ -9829,21 +9829,21 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
  */
     /*except:*/ {
       __Pyx_AddTraceback("fathon.mfdfa.MFDFA.saveObject", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_2, &__pyx_t_3) < 0) __PYX_ERR(0, 273, __pyx_L5_except_error)
+      if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_2, &__pyx_t_3) < 0) __PYX_ERR(0, 275, __pyx_L5_except_error)
       __Pyx_XGOTREF(__pyx_t_1);
       __Pyx_XGOTREF(__pyx_t_2);
       __Pyx_XGOTREF(__pyx_t_3);
 
-      /* "fathon/mfdfa.pyx":274
+      /* "fathon/mfdfa.pyx":276
  *             saveDict['n'] = self.n.tolist()
  *         except:
  *             saveDict['n'] = []             # <<<<<<<<<<<<<<
  *         try:
  *             saveDict['F'] = self.F.tolist()
  */
-      __pyx_t_8 = PyList_New(0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 274, __pyx_L5_except_error)
+      __pyx_t_8 = PyList_New(0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 276, __pyx_L5_except_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_n, __pyx_t_8) < 0))) __PYX_ERR(0, 274, __pyx_L5_except_error)
+      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_n, __pyx_t_8) < 0))) __PYX_ERR(0, 276, __pyx_L5_except_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -9851,7 +9851,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
       goto __pyx_L4_exception_handled;
     }
 
-    /* "fathon/mfdfa.pyx":271
+    /* "fathon/mfdfa.pyx":273
  *         saveDict['kind'] = 'mfdfa'
  *         saveDict['tsVec'] = self.tsVec.tolist()
  *         try:             # <<<<<<<<<<<<<<
@@ -9872,7 +9872,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __pyx_L8_try_end:;
   }
 
-  /* "fathon/mfdfa.pyx":275
+  /* "fathon/mfdfa.pyx":277
  *         except:
  *             saveDict['n'] = []
  *         try:             # <<<<<<<<<<<<<<
@@ -9888,14 +9888,14 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __Pyx_XGOTREF(__pyx_t_5);
     /*try:*/ {
 
-      /* "fathon/mfdfa.pyx":276
+      /* "fathon/mfdfa.pyx":278
  *             saveDict['n'] = []
  *         try:
  *             saveDict['F'] = self.F.tolist()             # <<<<<<<<<<<<<<
  *         except:
  *             saveDict['F'] = []
  */
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->F), __pyx_n_s_tolist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 276, __pyx_L11_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->F), __pyx_n_s_tolist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 278, __pyx_L11_error)
       __Pyx_GOTREF(__pyx_t_2);
       __pyx_t_1 = NULL;
       __pyx_t_4 = 0;
@@ -9915,14 +9915,14 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
         PyObject *__pyx_callargs[2] = {__pyx_t_1, NULL};
         __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 276, __pyx_L11_error)
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 278, __pyx_L11_error)
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       }
-      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_F, __pyx_t_3) < 0))) __PYX_ERR(0, 276, __pyx_L11_error)
+      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_F, __pyx_t_3) < 0))) __PYX_ERR(0, 278, __pyx_L11_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "fathon/mfdfa.pyx":275
+      /* "fathon/mfdfa.pyx":277
  *         except:
  *             saveDict['n'] = []
  *         try:             # <<<<<<<<<<<<<<
@@ -9940,7 +9940,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-    /* "fathon/mfdfa.pyx":277
+    /* "fathon/mfdfa.pyx":279
  *         try:
  *             saveDict['F'] = self.F.tolist()
  *         except:             # <<<<<<<<<<<<<<
@@ -9949,21 +9949,21 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
  */
     /*except:*/ {
       __Pyx_AddTraceback("fathon.mfdfa.MFDFA.saveObject", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_2, &__pyx_t_1) < 0) __PYX_ERR(0, 277, __pyx_L13_except_error)
+      if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_2, &__pyx_t_1) < 0) __PYX_ERR(0, 279, __pyx_L13_except_error)
       __Pyx_XGOTREF(__pyx_t_3);
       __Pyx_XGOTREF(__pyx_t_2);
       __Pyx_XGOTREF(__pyx_t_1);
 
-      /* "fathon/mfdfa.pyx":278
+      /* "fathon/mfdfa.pyx":280
  *             saveDict['F'] = self.F.tolist()
  *         except:
  *             saveDict['F'] = []             # <<<<<<<<<<<<<<
  *         try:
  *             saveDict['listH'] = self.listH.tolist()
  */
-      __pyx_t_8 = PyList_New(0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 278, __pyx_L13_except_error)
+      __pyx_t_8 = PyList_New(0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 280, __pyx_L13_except_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_F, __pyx_t_8) < 0))) __PYX_ERR(0, 278, __pyx_L13_except_error)
+      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_F, __pyx_t_8) < 0))) __PYX_ERR(0, 280, __pyx_L13_except_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -9971,7 +9971,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
       goto __pyx_L12_exception_handled;
     }
 
-    /* "fathon/mfdfa.pyx":275
+    /* "fathon/mfdfa.pyx":277
  *         except:
  *             saveDict['n'] = []
  *         try:             # <<<<<<<<<<<<<<
@@ -9992,7 +9992,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __pyx_L16_try_end:;
   }
 
-  /* "fathon/mfdfa.pyx":279
+  /* "fathon/mfdfa.pyx":281
  *         except:
  *             saveDict['F'] = []
  *         try:             # <<<<<<<<<<<<<<
@@ -10008,14 +10008,14 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __Pyx_XGOTREF(__pyx_t_7);
     /*try:*/ {
 
-      /* "fathon/mfdfa.pyx":280
+      /* "fathon/mfdfa.pyx":282
  *             saveDict['F'] = []
  *         try:
  *             saveDict['listH'] = self.listH.tolist()             # <<<<<<<<<<<<<<
  *         except:
  *             saveDict['listH'] = []
  */
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->listH), __pyx_n_s_tolist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 280, __pyx_L19_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->listH), __pyx_n_s_tolist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 282, __pyx_L19_error)
       __Pyx_GOTREF(__pyx_t_2);
       __pyx_t_3 = NULL;
       __pyx_t_4 = 0;
@@ -10035,14 +10035,14 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
         PyObject *__pyx_callargs[2] = {__pyx_t_3, NULL};
         __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 280, __pyx_L19_error)
+        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 282, __pyx_L19_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       }
-      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_listH, __pyx_t_1) < 0))) __PYX_ERR(0, 280, __pyx_L19_error)
+      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_listH, __pyx_t_1) < 0))) __PYX_ERR(0, 282, __pyx_L19_error)
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-      /* "fathon/mfdfa.pyx":279
+      /* "fathon/mfdfa.pyx":281
  *         except:
  *             saveDict['F'] = []
  *         try:             # <<<<<<<<<<<<<<
@@ -10060,7 +10060,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-    /* "fathon/mfdfa.pyx":281
+    /* "fathon/mfdfa.pyx":283
  *         try:
  *             saveDict['listH'] = self.listH.tolist()
  *         except:             # <<<<<<<<<<<<<<
@@ -10069,21 +10069,21 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
  */
     /*except:*/ {
       __Pyx_AddTraceback("fathon.mfdfa.MFDFA.saveObject", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_2, &__pyx_t_3) < 0) __PYX_ERR(0, 281, __pyx_L21_except_error)
+      if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_2, &__pyx_t_3) < 0) __PYX_ERR(0, 283, __pyx_L21_except_error)
       __Pyx_XGOTREF(__pyx_t_1);
       __Pyx_XGOTREF(__pyx_t_2);
       __Pyx_XGOTREF(__pyx_t_3);
 
-      /* "fathon/mfdfa.pyx":282
+      /* "fathon/mfdfa.pyx":284
  *             saveDict['listH'] = self.listH.tolist()
  *         except:
  *             saveDict['listH'] = []             # <<<<<<<<<<<<<<
  *         try:
  *             saveDict['qList'] = self.qList.tolist()
  */
-      __pyx_t_8 = PyList_New(0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 282, __pyx_L21_except_error)
+      __pyx_t_8 = PyList_New(0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 284, __pyx_L21_except_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_listH, __pyx_t_8) < 0))) __PYX_ERR(0, 282, __pyx_L21_except_error)
+      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_listH, __pyx_t_8) < 0))) __PYX_ERR(0, 284, __pyx_L21_except_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -10091,7 +10091,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
       goto __pyx_L20_exception_handled;
     }
 
-    /* "fathon/mfdfa.pyx":279
+    /* "fathon/mfdfa.pyx":281
  *         except:
  *             saveDict['F'] = []
  *         try:             # <<<<<<<<<<<<<<
@@ -10112,7 +10112,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __pyx_L24_try_end:;
   }
 
-  /* "fathon/mfdfa.pyx":283
+  /* "fathon/mfdfa.pyx":285
  *         except:
  *             saveDict['listH'] = []
  *         try:             # <<<<<<<<<<<<<<
@@ -10128,14 +10128,14 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __Pyx_XGOTREF(__pyx_t_5);
     /*try:*/ {
 
-      /* "fathon/mfdfa.pyx":284
+      /* "fathon/mfdfa.pyx":286
  *             saveDict['listH'] = []
  *         try:
  *             saveDict['qList'] = self.qList.tolist()             # <<<<<<<<<<<<<<
  *         except:
  *             saveDict['qList'] = []
  */
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->qList), __pyx_n_s_tolist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 284, __pyx_L27_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->qList), __pyx_n_s_tolist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 286, __pyx_L27_error)
       __Pyx_GOTREF(__pyx_t_2);
       __pyx_t_1 = NULL;
       __pyx_t_4 = 0;
@@ -10155,14 +10155,14 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
         PyObject *__pyx_callargs[2] = {__pyx_t_1, NULL};
         __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 284, __pyx_L27_error)
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 286, __pyx_L27_error)
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       }
-      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_qList, __pyx_t_3) < 0))) __PYX_ERR(0, 284, __pyx_L27_error)
+      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_qList, __pyx_t_3) < 0))) __PYX_ERR(0, 286, __pyx_L27_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "fathon/mfdfa.pyx":283
+      /* "fathon/mfdfa.pyx":285
  *         except:
  *             saveDict['listH'] = []
  *         try:             # <<<<<<<<<<<<<<
@@ -10180,7 +10180,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-    /* "fathon/mfdfa.pyx":285
+    /* "fathon/mfdfa.pyx":287
  *         try:
  *             saveDict['qList'] = self.qList.tolist()
  *         except:             # <<<<<<<<<<<<<<
@@ -10189,21 +10189,21 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
  */
     /*except:*/ {
       __Pyx_AddTraceback("fathon.mfdfa.MFDFA.saveObject", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_2, &__pyx_t_1) < 0) __PYX_ERR(0, 285, __pyx_L29_except_error)
+      if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_2, &__pyx_t_1) < 0) __PYX_ERR(0, 287, __pyx_L29_except_error)
       __Pyx_XGOTREF(__pyx_t_3);
       __Pyx_XGOTREF(__pyx_t_2);
       __Pyx_XGOTREF(__pyx_t_1);
 
-      /* "fathon/mfdfa.pyx":286
+      /* "fathon/mfdfa.pyx":288
  *             saveDict['qList'] = self.qList.tolist()
  *         except:
  *             saveDict['qList'] = []             # <<<<<<<<<<<<<<
  *         saveDict['isComputed'] = self.isComputed
  * 
  */
-      __pyx_t_8 = PyList_New(0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 286, __pyx_L29_except_error)
+      __pyx_t_8 = PyList_New(0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 288, __pyx_L29_except_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_qList, __pyx_t_8) < 0))) __PYX_ERR(0, 286, __pyx_L29_except_error)
+      if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_qList, __pyx_t_8) < 0))) __PYX_ERR(0, 288, __pyx_L29_except_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -10211,7 +10211,7 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
       goto __pyx_L28_exception_handled;
     }
 
-    /* "fathon/mfdfa.pyx":283
+    /* "fathon/mfdfa.pyx":285
  *         except:
  *             saveDict['listH'] = []
  *         try:             # <<<<<<<<<<<<<<
@@ -10232,50 +10232,50 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     __pyx_L32_try_end:;
   }
 
-  /* "fathon/mfdfa.pyx":287
+  /* "fathon/mfdfa.pyx":289
  *         except:
  *             saveDict['qList'] = []
  *         saveDict['isComputed'] = self.isComputed             # <<<<<<<<<<<<<<
  * 
  *         f = open(outFileName + '.fathon', 'wb')
  */
-  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_v_self->isComputed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 287, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_v_self->isComputed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 289, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_isComputed, __pyx_t_1) < 0))) __PYX_ERR(0, 287, __pyx_L1_error)
+  if (unlikely((PyDict_SetItem(__pyx_v_saveDict, __pyx_n_u_isComputed, __pyx_t_1) < 0))) __PYX_ERR(0, 289, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "fathon/mfdfa.pyx":289
+  /* "fathon/mfdfa.pyx":291
  *         saveDict['isComputed'] = self.isComputed
  * 
  *         f = open(outFileName + '.fathon', 'wb')             # <<<<<<<<<<<<<<
  *         pickle.dump(saveDict, f)
  *         f.close()
  */
-  __pyx_t_1 = PyNumber_Add(__pyx_v_outFileName, __pyx_kp_u_fathon_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 289, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_Add(__pyx_v_outFileName, __pyx_kp_u_fathon_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 291, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 289, __pyx_L1_error)
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 291, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_GIVEREF(__pyx_t_1);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1)) __PYX_ERR(0, 289, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1)) __PYX_ERR(0, 291, __pyx_L1_error);
   __Pyx_INCREF(__pyx_n_u_wb);
   __Pyx_GIVEREF(__pyx_n_u_wb);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_n_u_wb)) __PYX_ERR(0, 289, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_n_u_wb)) __PYX_ERR(0, 291, __pyx_L1_error);
   __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_open, __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 289, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_open, __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 291, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_f = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "fathon/mfdfa.pyx":290
+  /* "fathon/mfdfa.pyx":292
  * 
  *         f = open(outFileName + '.fathon', 'wb')
  *         pickle.dump(saveDict, f)             # <<<<<<<<<<<<<<
  *         f.close()
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_pickle); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 290, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_pickle); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 292, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_dump); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 290, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_dump); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 292, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_2 = NULL;
@@ -10296,18 +10296,18 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     PyObject *__pyx_callargs[3] = {__pyx_t_2, __pyx_v_saveDict, __pyx_v_f};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 2+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 290, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 292, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "fathon/mfdfa.pyx":291
+  /* "fathon/mfdfa.pyx":293
  *         f = open(outFileName + '.fathon', 'wb')
  *         pickle.dump(saveDict, f)
  *         f.close()             # <<<<<<<<<<<<<<
  */
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_close); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 291, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_close); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 293, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_2 = NULL;
   __pyx_t_4 = 0;
@@ -10327,13 +10327,13 @@ static PyObject *__pyx_pf_6fathon_5mfdfa_5MFDFA_10saveObject(struct __pyx_obj_6f
     PyObject *__pyx_callargs[2] = {__pyx_t_2, NULL};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 291, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 293, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "fathon/mfdfa.pyx":260
+  /* "fathon/mfdfa.pyx":262
  *             print('Cannot compute multifractal spectrum, fluctuations vector has not been computed yet.')
  * 
  *     def saveObject(self, outFileName):             # <<<<<<<<<<<<<<
@@ -11805,36 +11805,36 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__14);
   __Pyx_GIVEREF(__pyx_tuple__14);
 
-  /* "fathon/mfdfa.pyx":252
+  /* "fathon/mfdfa.pyx":254
  *                 tau = self.computeMassExponents()
  *                 alpha = np.diff(tau) / (self.qList[1] - self.qList[0])
  *                 mfSpect = self.qList[0:-1] * alpha - tau[0:-1]             # <<<<<<<<<<<<<<
  * 
  *                 return alpha, mfSpect
  */
-  __pyx_slice__15 = PySlice_New(__pyx_int_0, __pyx_int_neg_1, Py_None); if (unlikely(!__pyx_slice__15)) __PYX_ERR(0, 252, __pyx_L1_error)
+  __pyx_slice__15 = PySlice_New(__pyx_int_0, __pyx_int_neg_1, Py_None); if (unlikely(!__pyx_slice__15)) __PYX_ERR(0, 254, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__15);
   __Pyx_GIVEREF(__pyx_slice__15);
 
-  /* "fathon/mfdfa.pyx":256
+  /* "fathon/mfdfa.pyx":258
  *                 return alpha, mfSpect
  *             else:
  *                 raise ValueError('Error: Number of q moments must be greater than one to compute multifractal spectrum.')             # <<<<<<<<<<<<<<
  *         else:
  *             print('Cannot compute multifractal spectrum, fluctuations vector has not been computed yet.')
  */
-  __pyx_tuple__16 = PyTuple_Pack(1, __pyx_kp_u_Error_Number_of_q_moments_must_b); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 256, __pyx_L1_error)
+  __pyx_tuple__16 = PyTuple_Pack(1, __pyx_kp_u_Error_Number_of_q_moments_must_b); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 258, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__16);
   __Pyx_GIVEREF(__pyx_tuple__16);
 
-  /* "fathon/mfdfa.pyx":258
+  /* "fathon/mfdfa.pyx":260
  *                 raise ValueError('Error: Number of q moments must be greater than one to compute multifractal spectrum.')
  *         else:
  *             print('Cannot compute multifractal spectrum, fluctuations vector has not been computed yet.')             # <<<<<<<<<<<<<<
  * 
  *     def saveObject(self, outFileName):
  */
-  __pyx_tuple__17 = PyTuple_Pack(1, __pyx_kp_u_Cannot_compute_multifractal_spec); if (unlikely(!__pyx_tuple__17)) __PYX_ERR(0, 258, __pyx_L1_error)
+  __pyx_tuple__17 = PyTuple_Pack(1, __pyx_kp_u_Cannot_compute_multifractal_spec); if (unlikely(!__pyx_tuple__17)) __PYX_ERR(0, 260, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__17);
   __Pyx_GIVEREF(__pyx_tuple__17);
 
@@ -11880,7 +11880,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     @cython.wraparound(False)
  *     @cython.nonecheck(False)
  *     cpdef computeMassExponents(self):             # <<<<<<<<<<<<<<
- *         """Computation of the mass exponents.
+ *         """Computation of the mass exponents tau(q) = q*H(q) - 1.
  * 
  */
   __pyx_tuple__25 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__25)) __PYX_ERR(0, 217, __pyx_L1_error)
@@ -11893,21 +11893,21 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     @cython.nonecheck(False)
  *     cpdef computeMultifractalSpectrum(self):             # <<<<<<<<<<<<<<
  *         """Computation of the multifractal spectrum.
- * 
+ *         alpha(q_i)  d tau / d q  (finite difference on uniform q grid)
  */
   __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__25, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_fathon_mfdfa_pyx, __pyx_n_s_computeMultifractalSpectrum, 236, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 236, __pyx_L1_error)
 
-  /* "fathon/mfdfa.pyx":260
+  /* "fathon/mfdfa.pyx":262
  *             print('Cannot compute multifractal spectrum, fluctuations vector has not been computed yet.')
  * 
  *     def saveObject(self, outFileName):             # <<<<<<<<<<<<<<
  *         """Save current object state to binary file.
  * 
  */
-  __pyx_tuple__28 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_outFileName, __pyx_n_s_saveDict, __pyx_n_s_f); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 260, __pyx_L1_error)
+  __pyx_tuple__28 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_outFileName, __pyx_n_s_saveDict, __pyx_n_s_f); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 262, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__28);
   __Pyx_GIVEREF(__pyx_tuple__28);
-  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_fathon_mfdfa_pyx, __pyx_n_s_saveObject, 260, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 260, __pyx_L1_error)
+  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_fathon_mfdfa_pyx, __pyx_n_s_saveObject, 262, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 262, __pyx_L1_error)
 
   /* "(tree fragment)":1
  * def __reduce_cython__(self):             # <<<<<<<<<<<<<<
@@ -12516,7 +12516,7 @@ if (!__Pyx_RefNanny) {
  *     @cython.wraparound(False)
  *     @cython.nonecheck(False)
  *     cpdef computeMassExponents(self):             # <<<<<<<<<<<<<<
- *         """Computation of the mass exponents.
+ *         """Computation of the mass exponents tau(q) = q*H(q) - 1.
  * 
  */
   __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_6fathon_5mfdfa_5MFDFA_7computeMassExponents, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_MFDFA_computeMassExponents, NULL, __pyx_n_s_fathon_mfdfa, __pyx_d, ((PyObject *)__pyx_codeobj__26)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 217, __pyx_L1_error)
@@ -12530,7 +12530,7 @@ if (!__Pyx_RefNanny) {
  *     @cython.nonecheck(False)
  *     cpdef computeMultifractalSpectrum(self):             # <<<<<<<<<<<<<<
  *         """Computation of the multifractal spectrum.
- * 
+ *         alpha(q_i)  d tau / d q  (finite difference on uniform q grid)
  */
   __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_6fathon_5mfdfa_5MFDFA_9computeMultifractalSpectrum, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_MFDFA_computeMultifractalSpectru, NULL, __pyx_n_s_fathon_mfdfa, __pyx_d, ((PyObject *)__pyx_codeobj__27)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 236, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -12538,16 +12538,16 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   PyType_Modified(__pyx_ptype_6fathon_5mfdfa_MFDFA);
 
-  /* "fathon/mfdfa.pyx":260
+  /* "fathon/mfdfa.pyx":262
  *             print('Cannot compute multifractal spectrum, fluctuations vector has not been computed yet.')
  * 
  *     def saveObject(self, outFileName):             # <<<<<<<<<<<<<<
  *         """Save current object state to binary file.
  * 
  */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_6fathon_5mfdfa_5MFDFA_11saveObject, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_MFDFA_saveObject, NULL, __pyx_n_s_fathon_mfdfa, __pyx_d, ((PyObject *)__pyx_codeobj__29)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 260, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_6fathon_5mfdfa_5MFDFA_11saveObject, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_MFDFA_saveObject, NULL, __pyx_n_s_fathon_mfdfa, __pyx_d, ((PyObject *)__pyx_codeobj__29)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 262, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_6fathon_5mfdfa_MFDFA, __pyx_n_s_saveObject, __pyx_t_2) < 0) __PYX_ERR(0, 260, __pyx_L1_error)
+  if (__Pyx_SetItemOnTypeDict((PyObject *)__pyx_ptype_6fathon_5mfdfa_MFDFA, __pyx_n_s_saveObject, __pyx_t_2) < 0) __PYX_ERR(0, 262, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   PyType_Modified(__pyx_ptype_6fathon_5mfdfa_MFDFA);
 

@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> // for memcpy
 #include <math.h>
 #include <gsl/gsl_multifit.h>
 
@@ -270,4 +271,61 @@ void polynomialFit(int obs, int degree, double *dx, double *dy, double *store)
     gsl_matrix_free(cov);
     gsl_vector_free(y);
     gsl_vector_free(c);
+}
+
+static inline void mf_build_moments_S(int len, int p, double *S) {
+    // S[k] = sum_{w=0}^{len-1} (w^k), for k=0..2p
+    // This depends only on window length and polynomial order.
+    for (int k = 0; k <= 2*p; ++k) S[k] = 0.0;
+    for (int w = 0; w < len; ++w) {
+        double x = (double)w;
+        for (int k = 0; k <= 2*p; ++k) {
+            S[k] += quickPow(x, k);
+        }
+    }
+}
+
+static inline void mf_build_M_template(const double *S, int p, double *M0) {
+    // M0[a,b] = S[a+b], a,b = 0..p (normal equations' moment matrix)
+    for (int a = 0; a <= p; ++a) {
+        for (int b = 0; b <= p; ++b) {
+            M0[a*(p+1) + b] = S[a+b];
+        }
+    }
+}
+
+static inline double mf_block_mean_square(
+    const double *y, int start, int len, int p,
+    const double *M0, double *M_scratch, double *b_scratch)
+{
+    // Build right-hand side vector T[a] = sum y(w)*x^a, a=0..p, reuse b_scratch for T
+    for (int a = 0; a <= p; ++a) b_scratch[a] = 0.0;
+
+    for (int w = 0; w < len; ++w) {
+        double x   = (double)w;
+        double val = y[start + w];
+        for (int a = 0; a <= p; ++a)
+            b_scratch[a] += val * quickPow(x, a);
+    }
+
+    // Copy M0 to M_scratch (solve modifies it)
+    int dim = (p + 1) * (p + 1);
+    memcpy(M_scratch, M0, (size_t)dim * sizeof(double));
+
+    // Solve for coefficients in-place: M_scratch * b_scratch = T
+    solveLinearSystem(M_scratch, b_scratch, p);
+
+    // Accumulate residuals for this block
+    double blockSum = 0.0;
+    for (int w = 0; w < len; ++w) {
+        double x = (double)w;
+        double fitVal = 0.0;
+        for (int a = 0; a <= p; ++a)
+            fitVal += b_scratch[a] * quickPow(x, a);
+        double diff = y[start + w] - fitVal;
+        blockSum += diff * diff;
+    }
+
+    // Return mean square over the block
+    return blockSum / (double)len;
 }

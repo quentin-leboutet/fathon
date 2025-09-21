@@ -20,6 +20,7 @@ import os
 from .dfa import DFA
 from .dma import DMA
 from .mfdfa import MFDFA
+from .mfdma import MFDMA
 from .dcca import DCCA
 from .mfdcca import MFDCCA
 from .ht import HT

@@ -19,11 +19,11 @@ TESTS_PATH = os.path.dirname(os.path.abspath(__file__))
 # (extracted from Ihlen's MATLAB package "Multifractal detrended fluctuation analyses")
 #####
 # white noise
-wn = np.loadtxt(os.path.join(TESTS_PATH, 'mat/whitenoise.txt'))
+wn = np.loadtxt(os.path.join(TESTS_PATH, "mat/whitenoise.txt"))
 # monofractal time series
-mn = np.loadtxt(os.path.join(TESTS_PATH, 'mat/monofractal.txt'))
+mn = np.loadtxt(os.path.join(TESTS_PATH, "mat/monofractal.txt"))
 # multifractal time series
-mf = np.loadtxt(os.path.join(TESTS_PATH, 'mat/multifractal.txt'))
+mf = np.loadtxt(os.path.join(TESTS_PATH, "mat/multifractal.txt"))
 #####
 
 # defining parameters and scales as in Ihlen's paper
@@ -34,11 +34,13 @@ exponents = np.linspace(np.log2(nMin), np.log2(nMax), nScales)
 scales = np.round(np.power(2.0, exponents)).astype(np.int64)
 q_list = [-5, -3, -1, 1, 3, 5]
 
+
 def get_idxs(vec, scales):
     idxs = []
     for s in scales:
-        idxs.append(np.where(vec==s)[0][0])
+        idxs.append(np.where(vec == s)[0][0])
     return idxs
+
 
 #####
 # Functionality test 1
@@ -53,7 +55,13 @@ def test_mat_dfa_wn():
     F_w = F_w[idxs]
     H, _ = np.polyfit(np.log2(n_w), np.log2(F_w), 1)
     assert math.isclose(H, 0.45, rel_tol=1e-2, abs_tol=0)
-    
+
+
+#####
+# Functionality test 2
+# It tests DMA for the white noise time series
+# H should be 0.45
+#####
 def test_mat_dma_wn():
     w_dma = fathon.DMA(fu.toAggregated(wn))
     n_w, F_w = w_dma.computeFlucVec(scales, revSeg=False, polOrd=1)
@@ -63,8 +71,9 @@ def test_mat_dma_wn():
     H, _ = np.polyfit(np.log2(n_w), np.log2(F_w), 1)
     assert math.isclose(H, 0.45, rel_tol=1e-2, abs_tol=0), H
 
+
 #####
-# Functionality test 2
+# Functionality test 3
 # It tests DFA for the monofractal time series
 # H should be 0.72
 #####
@@ -77,6 +86,12 @@ def test_mat_dfa_mn():
     H, _ = np.polyfit(np.log2(n_mn), np.log2(F_mn), 1)
     assert math.isclose(H, 0.72, rel_tol=1e-2, abs_tol=0)
 
+
+#####
+# Functionality test 4
+# It tests DMA for the monofractal time series
+# H should be 0.72
+#####
 def test_mat_dma_mn():
     mn_dma = fathon.DMA(fu.toAggregated(mn))
     n_mn, F_mn = mn_dma.computeFlucVec(scales, revSeg=False, polOrd=1)
@@ -88,8 +103,9 @@ def test_mat_dma_mn():
     H, _ = np.polyfit(np.log2(n_mn), np.log2(F_mn), 1)
     assert math.isclose(H, 0.72, rel_tol=1e-2, abs_tol=0), H
 
+
 #####
-# Functionality test 3
+# Functionality test 5
 # It tests DFA for the multifractal time series
 # H should be 0.77
 #####
@@ -102,6 +118,12 @@ def test_mat_dfa_mf():
     H, _ = np.polyfit(np.log2(n_mf), np.log2(F_mf), 1)
     assert math.isclose(H, 0.77, rel_tol=1e-2, abs_tol=0)
 
+
+#####
+# Functionality test 6
+# It tests DMA for the multifractal time series
+# H should be 0.77
+#####
 def test_mat_dma_mf():
     mf_dma = fathon.DMA(fu.toAggregated(mf))
     n_mf, F_mf = mf_dma.computeFlucVec(scales, revSeg=False, polOrd=1)
@@ -111,8 +133,9 @@ def test_mat_dma_mf():
     H, _ = np.polyfit(np.log2(n_mf), np.log2(F_mf), 1)
     assert math.isclose(H, 0.77, rel_tol=1e-2, abs_tol=0)
 
+
 #####
-# Functionality test 4
+# Functionality test 7
 # It tests MFDFA for the white noise time series
 # Hq should be [0.4583, 0.4555, 0.4546, 0.4515, 0.4445, 0.4340]
 #####
@@ -127,10 +150,33 @@ def test_mat_mfdfa_wn():
     Hq = []
     for i in range(len(q_list)):
         Hq.append(np.polyfit(np.log2(n_w), np.log2(F_w_vec[i]), 1)[0])
-    np.testing.assert_allclose(Hq, [0.4583, 0.4555, 0.4546, 0.4515, 0.4445, 0.4340], rtol=1e-4, atol=0)
+    np.testing.assert_allclose(
+        Hq, [0.4583, 0.4555, 0.4546, 0.4515, 0.4445, 0.4340], rtol=1e-4, atol=0
+    )
+
 
 #####
-# Functionality test 5
+# Functionality test 8
+# It tests MFDMA for the white noise time series
+# Hq should be [0.4583, 0.4555, 0.4546, 0.4515, 0.4445, 0.4340]
+#####
+def test_mat_mfdma_wn():
+    w_mfdma = fathon.MFDMA(fu.toAggregated(wn))
+    n_w, F_w = w_mfdma.computeFlucVec(scales, qList=q_list, revSeg=False, polOrd=1)
+    idxs = get_idxs(n_w, scales)
+    n_w = n_w[idxs]
+    F_w_vec = np.zeros((len(q_list), len(idxs)))
+    for i in range(len(q_list)):
+        F_w_vec[i] = F_w[i, idxs]
+    Hq = []
+    for i in range(len(q_list)):
+        Hq.append(np.polyfit(np.log2(n_w), np.log2(F_w_vec[i]), 1)[0])
+    np.testing.assert_allclose(
+        Hq, [0.4583, 0.4555, 0.4546, 0.4515, 0.4445, 0.4340], rtol=1e-4, atol=0
+    )
+    
+#####
+# Functionality test 9
 # It tests MFDFA for the monofractal time series
 # Hq should be [0.7542, 0.7392, 0.7301, 0.7240, 0.7149, 0.7023]
 #####
@@ -145,10 +191,33 @@ def test_mat_mfdfa_mn():
     Hq = []
     for i in range(len(q_list)):
         Hq.append(np.polyfit(np.log2(n_mn), np.log2(F_mn_vec[i]), 1)[0])
-    np.testing.assert_allclose(Hq, [0.7542, 0.7392, 0.7301, 0.7240, 0.7149, 0.7023], rtol=1e-4, atol=0)
+    np.testing.assert_allclose(
+        Hq, [0.7542, 0.7392, 0.7301, 0.7240, 0.7149, 0.7023], rtol=1e-4, atol=0
+    )
+
 
 #####
-# Functionality test 6
+# Functionality test 10
+# It tests MFDMA for the monofractal time series
+# Hq should be [0.7542, 0.7392, 0.7301, 0.7240, 0.7149, 0.7023]
+#####
+def test_mat_mfdma_mn():
+    mn_mfdma = fathon.MFDMA(fu.toAggregated(mn))
+    n_mn, F_mn = mn_mfdma.computeFlucVec(scales, qList=q_list, revSeg=False, polOrd=1)
+    idxs = get_idxs(n_mn, scales)
+    n_mn = n_mn[idxs]
+    F_mn_vec = np.zeros((len(q_list), len(idxs)))
+    for i in range(len(q_list)):
+        F_mn_vec[i] = F_mn[i, idxs]
+    Hq = []
+    for i in range(len(q_list)):
+        Hq.append(np.polyfit(np.log2(n_mn), np.log2(F_mn_vec[i]), 1)[0])
+    np.testing.assert_allclose(
+        Hq, [0.7542, 0.7392, 0.7301, 0.7240, 0.7149, 0.7023], rtol=1e-4, atol=0
+    )
+
+#####
+# Functionality test 11
 # It tests MFDFA for the multifractal time series
 # Hq should be [1.4477, 1.3064, 1.0823, 0.8846, 0.6606, 0.5174]
 #####
@@ -163,9 +232,32 @@ def test_mat_mfdfa_mf():
     Hq = []
     for i in range(len(q_list)):
         Hq.append(np.polyfit(np.log2(n_mf), np.log2(F_mf_vec[i]), 1)[0])
-    np.testing.assert_allclose(Hq, [1.4477, 1.3064, 1.0823, 0.8846, 0.6606, 0.5174], rtol=1e-4, atol=0)
+    np.testing.assert_allclose(
+        Hq, [1.4477, 1.3064, 1.0823, 0.8846, 0.6606, 0.5174], rtol=1e-4, atol=0
+    )
 
-#---------------------------------------------------------------------------------------------------------
+
+#####
+# Functionality test 12
+# It tests MFDFA for the multifractal time series
+# Hq should be [1.4477, 1.3064, 1.0823, 0.8846, 0.6606, 0.5174]
+#####
+def test_mat_mfdma_mf():
+    mf_mfdma = fathon.MFDMA(fu.toAggregated(mf))
+    n_mf, F_mf = mf_mfdma.computeFlucVec(scales, qList=q_list, revSeg=False, polOrd=1)
+    idxs = get_idxs(n_mf, scales)
+    n_mf = n_mf[idxs]
+    F_mf_vec = np.zeros((len(q_list), len(idxs)))
+    for i in range(len(q_list)):
+        F_mf_vec[i] = F_mf[i, idxs]
+    Hq = []
+    for i in range(len(q_list)):
+        Hq.append(np.polyfit(np.log2(n_mf), np.log2(F_mf_vec[i]), 1)[0])
+    np.testing.assert_allclose(
+        Hq, [1.4477, 1.3064, 1.0823, 0.8846, 0.6606, 0.5174], rtol=1e-4, atol=0
+    )
+
+# ---------------------------------------------------------------------------------------------------------
 
 # REGRESSION TESTS
 # ----------------
@@ -180,17 +272,18 @@ def test_mat_mfdfa_mf():
 # Time series for regression tests
 #####
 # co2 residuals after yearly cycle removal
-ts1 = np.loadtxt(os.path.join(TESTS_PATH, 'ts1.txt'))
+ts1 = np.loadtxt(os.path.join(TESTS_PATH, "ts1.txt"))
 ts1 = fu.toAggregated(ts1)
 # other co2 residuals after yearly cycle removal
-ts2 = np.loadtxt(os.path.join(TESTS_PATH, 'ts2.txt'))
+ts2 = np.loadtxt(os.path.join(TESTS_PATH, "ts2.txt"))
 ts2 = fu.toAggregated(ts2)
 # multifractal data
-ts3 = np.loadtxt(os.path.join(TESTS_PATH, 'ts3.txt'))
+ts3 = np.loadtxt(os.path.join(TESTS_PATH, "ts3.txt"))
 ts3 = fu.toAggregated(ts3)
 # udfa data
-ts4 = np.loadtxt(os.path.join(TESTS_PATH, 'ts4.txt'))
+ts4 = np.loadtxt(os.path.join(TESTS_PATH, "ts4.txt"))
 #####
+
 
 #####
 # Regression test 1
@@ -203,14 +296,7 @@ def test_dfa_lin_step():
     H1, H_int1 = pydfa.fitFlucVec()
 
     assert math.isclose(H1, 0.7982194289592676)
-    
-def test_dma_lin_step():
-    pydma = fathon.DMA(ts1)
-    winSizes = fu.linRangeByStep(10, 200)
-    n1, F1 = pydma.computeFlucVec(winSizes, revSeg=True)
-    H1, H_int1 = pydma.fitFlucVec()
 
-    assert math.isclose(H1, 0.7982194289592676)
 
 #####
 # Regression test 1.1
@@ -223,14 +309,7 @@ def test_dfa_lin_count():
     H1, H_int1 = pydfa.fitFlucVec()
 
     assert math.isclose(H1, 0.7982194289592676)
-    
-def test_dma_lin_count():
-    pydma = fathon.DMA(ts1)
-    winSizes = fu.linRangeByCount(10, 200)
-    n1, F1 = pydma.computeFlucVec(winSizes, revSeg=True)
-    H1, H_int1 = pydma.fitFlucVec()
 
-    assert math.isclose(H1, 0.7982194289592676)
 
 #####
 # Regression test 1.2
@@ -241,17 +320,10 @@ def test_dfa_pow_step():
     winSizes = fu.powRangeByStep(2, 7, step=2)
     n1, F1 = pydfa.computeFlucVec(winSizes, revSeg=True)
     H1, H_int1 = pydfa.fitFlucVec()
-    
+
     assert math.isclose(H1, 0.7316763359204684)
 
-def test_dma_pow_step():
-    pydma = fathon.DMA(ts1)
-    winSizes = fu.powRangeByStep(2, 7, step=2)
-    n1, F1 = pydma.computeFlucVec(winSizes, revSeg=True)
-    H1, H_int1 = pydma.fitFlucVec()
-    
-    assert math.isclose(H1, 0.7316763359204684)
-    
+
 #####
 # Regression test 1.3
 # It tests if the Hurst exponent of `ts1` is correct
@@ -261,16 +333,9 @@ def test_dfa_pow_count():
     winSizes = fu.powRangeByCount(1, 5, count=4, base=3)
     n1, F1 = pydfa.computeFlucVec(winSizes, revSeg=True)
     H1, H_int1 = pydfa.fitFlucVec()
-    
-    assert math.isclose(H1, 0.8465301940909294)
 
-def test_dma_pow_count():
-    pydma = fathon.DMA(ts1)
-    winSizes = fu.powRangeByCount(1, 5, count=4, base=3)
-    n1, F1 = pydma.computeFlucVec(winSizes, revSeg=True)
-    H1, H_int1 = pydma.fitFlucVec()
-    
     assert math.isclose(H1, 0.8465301940909294)
+    
 
 #####
 # Regression test 1.4
@@ -285,21 +350,16 @@ def test_dfa_H_log():
     H2, H_int2 = pydfa.fitFlucVec(logBase=2)
     H3, H_int3 = pydfa.fitFlucVec(logBase=10)
     H4, H_int4 = pydfa.fitFlucVec(logBase=1.4)
-    
-    assert (math.isclose(H1, H2) and math.isclose(H1, H3) and math.isclose(H1, H4)
-            and math.isclose(H2, H3) and math.isclose(H2, H4) and math.isclose(H3, H4))
 
-def test_dma_H_log():
-    pydma = fathon.DMA(ts1)
-    winSizes = fu.powRangeByCount(1, 5, count=4, base=3)
-    n1, F1 = pydma.computeFlucVec(winSizes, revSeg=True)
-    H1, H_int1 = pydma.fitFlucVec()
-    H2, H_int2 = pydma.fitFlucVec(logBase=2)
-    H3, H_int3 = pydma.fitFlucVec(logBase=10)
-    H4, H_int4 = pydma.fitFlucVec(logBase=1.4)
-    
-    assert (math.isclose(H1, H2) and math.isclose(H1, H3) and math.isclose(H1, H4)
-            and math.isclose(H2, H3) and math.isclose(H2, H4) and math.isclose(H3, H4))
+    assert (
+        math.isclose(H1, H2)
+        and math.isclose(H1, H3)
+        and math.isclose(H1, H4)
+        and math.isclose(H2, H3)
+        and math.isclose(H2, H4)
+        and math.isclose(H3, H4)
+    )
+
 
 #####
 # Regression test 1.5
@@ -313,6 +373,87 @@ def test_udfa():
 
     assert math.isclose(H1, 0.47674272167783543)
     
+    
+#####
+# Regression test 2
+# It tests if the Hurst exponent of `ts1` is correct
+#####
+def test_dma_lin_step():
+    pydma = fathon.DMA(ts1)
+    winSizes = fu.linRangeByStep(10, 200)
+    n1, F1 = pydma.computeFlucVec(winSizes, revSeg=True)
+    H1, H_int1 = pydma.fitFlucVec()
+
+    assert math.isclose(H1, 0.7982194289592676)
+
+
+#####
+# Regression test 2.1
+# It tests if the Hurst exponent of `ts1` is correct
+#####
+def test_dma_lin_count():
+    pydma = fathon.DMA(ts1)
+    winSizes = fu.linRangeByCount(10, 200)
+    n1, F1 = pydma.computeFlucVec(winSizes, revSeg=True)
+    H1, H_int1 = pydma.fitFlucVec()
+
+    assert math.isclose(H1, 0.7982194289592676)
+
+
+#####
+# Regression test 2.2
+# It tests if the Hurst exponent of `ts1` is correct
+#####
+def test_dma_pow_step():
+    pydma = fathon.DMA(ts1)
+    winSizes = fu.powRangeByStep(2, 7, step=2)
+    n1, F1 = pydma.computeFlucVec(winSizes, revSeg=True)
+    H1, H_int1 = pydma.fitFlucVec()
+
+    assert math.isclose(H1, 0.7316763359204684)
+
+
+#####
+# Regression test 2.3
+# It tests if the Hurst exponent of `ts1` is correct
+#####
+def test_dma_pow_count():
+    pydma = fathon.DMA(ts1)
+    winSizes = fu.powRangeByCount(1, 5, count=4, base=3)
+    n1, F1 = pydma.computeFlucVec(winSizes, revSeg=True)
+    H1, H_int1 = pydma.fitFlucVec()
+
+    assert math.isclose(H1, 0.8465301940909294)
+
+
+#####
+# Regression test 2.4
+# It tests if the Hurst exponent of `ts1` is correct
+# using different log bases
+#####
+def test_dma_H_log():
+    pydma = fathon.DMA(ts1)
+    winSizes = fu.powRangeByCount(1, 5, count=4, base=3)
+    n1, F1 = pydma.computeFlucVec(winSizes, revSeg=True)
+    H1, H_int1 = pydma.fitFlucVec()
+    H2, H_int2 = pydma.fitFlucVec(logBase=2)
+    H3, H_int3 = pydma.fitFlucVec(logBase=10)
+    H4, H_int4 = pydma.fitFlucVec(logBase=1.4)
+
+    assert (
+        math.isclose(H1, H2)
+        and math.isclose(H1, H3)
+        and math.isclose(H1, H4)
+        and math.isclose(H2, H3)
+        and math.isclose(H2, H4)
+        and math.isclose(H3, H4)
+    )
+
+
+#####
+# Regression test 2.5
+# It tests if the Hurst exponent of `ts4` is correct
+#####
 def test_udma():
     pydma = fathon.DMA(ts4)
     winSizes = fu.linRangeByStep(10, 100)
@@ -321,8 +462,9 @@ def test_udma():
 
     assert math.isclose(H1, 0.47674272167783543), H1
 
+
 #####
-# Regression test 2
+# Regression test 3
 # It tests if the generalised Hurst exponent of `ts3`
 # for q = -1 is correct
 #####
@@ -335,12 +477,27 @@ def test_mfdfa():
 
     assert math.isclose(H2[2], 1.1956312585360254)
 
+
 #####
-# Regression test 3
+# Regression test 4
+# It tests if the generalised Hurst exponent of `ts3`
+# for q = -1 is correct
+#####
+def test_mfdma():
+    pymfdma = fathon.MFDMA(ts3)
+    qs = np.arange(-3, 3, 1)
+    winSizes = fu.linRangeByStep(10, 200)
+    n2, F2 = pymfdma.computeFlucVec(winSizes, qs, revSeg=True)
+    H2, H_int2 = pymfdma.fitFlucVec()
+
+    assert math.isclose(H2[2], 1.1956312585360254)
+
+#####
+# Regression test 5
 # It tests if the fifth element of the multifractal
 # spectrum of `ts3` is correct
 #####
-def test_multifractal_spectrum():
+def test_multifractal_spectrum_dfa():
     pymfdfa = fathon.MFDFA(ts3)
     qs = np.arange(-3, 3, 1)
     winSizes = fu.linRangeByStep(10, 200)
@@ -350,8 +507,25 @@ def test_multifractal_spectrum():
 
     assert math.isclose(m2[4], 0.8445200259231695)
 
+
 #####
-# Regression test 4
+# Regression test 6
+# It tests if the fifth element of the multifractal
+# spectrum of `ts3` is correct
+#####
+def test_multifractal_spectrum_dma():
+    pymfdma = fathon.MFDMA(ts3)
+    qs = np.arange(-3, 3, 1)
+    winSizes = fu.linRangeByStep(10, 200)
+    n2, F2 = pymfdma.computeFlucVec(winSizes, qs, revSeg=True)
+    H2, H_int2 = pymfdma.fitFlucVec()
+    a2, m2 = pymfdma.computeMultifractalSpectrum()
+
+    assert math.isclose(m2[4], 0.8445200259231695)
+    
+    
+#####
+# Regression test 7
 # It tests if the fiftythird element of the cross-correlation
 # coefficient between `ts1` and `ts2` is correct
 #####
@@ -362,8 +536,9 @@ def test_rho():
 
     assert math.isclose(rho[53], 0.48503322468665233)
 
+
 #####
-# Regression test 5
+# Regression test 8
 # It tests if one element of the lower and upper
 # confidence levels of the cross-correlation coefficient
 # for series of the same length of `ts1` and `ts2` are correct
@@ -374,10 +549,13 @@ def test_rho_thresholds():
     winSizes = fu.linRangeByStep(10, 200, step=2)
     n4, int1, int2 = pydcca.rhoThresholds(len(ts1), winSizes, 10, 0.95)
 
-    assert math.isclose(int1[53], 0.2619278369335029) and math.isclose(int2[53], -0.41952479444776136)
+    assert math.isclose(int1[53], 0.2619278369335029) and math.isclose(
+        int2[53], -0.41952479444776136
+    )
+
 
 #####
-# Regression test 6
+# Regression test 9
 # It tests if the Hurst exponent between `ts1`
 # and `ts2` is correct
 #####
@@ -386,11 +564,12 @@ def test_dcca():
     winSizes = fu.linRangeByStep(10, 200, step=2)
     n, F = pydcca.computeFlucVec(winSizes, polOrd=2, overlap=True)
     H, H_int = pydcca.fitFlucVec()
-    
+
     assert math.isclose(H, 0.9604004237165071)
 
+
 #####
-# Regression test 7
+# Regression test 10
 # It tests if the fortysecond element at scale 10 and the twelfth at
 # scale 100 of the local Hurst exponent of `ts2` are correct
 #####
@@ -398,11 +577,14 @@ def test_ht():
     pyht = fathon.HT(ts2)
     scales = [10, 100]
     ht = pyht.computeHt(scales, mfdfaPolOrd=3)
-    
-    assert math.isclose(ht[0, 42], 0.7091788895838137) and math.isclose(ht[1, 12], 0.5758723286513718)
-    
+
+    assert math.isclose(ht[0, 42], 0.7091788895838137) and math.isclose(
+        ht[1, 12], 0.5758723286513718
+    )
+
+
 #####
-# Regression test 8
+# Regression test 11
 # It tests if the fortysecond element at scale 10 and the twelfth at
 # scale 100 of the local Hurst exponent of `ts2` are correct
 #####
@@ -410,61 +592,76 @@ def test_ht_hq0():
     pyht = fathon.HT(ts2)
     scales = [10, 100]
     ht = pyht.computeHt(scales, mfdfaPolOrd=1, q0Fit=[0.5, -0.2])
-    
-    assert math.isclose(ht[0, 42], 0.9576568128926679) and math.isclose(ht[1, 12], 3.1007577894168263)
-    
+
+    assert math.isclose(ht[0, 42], 0.9576568128926679) and math.isclose(
+        ht[1, 12], 3.1007577894168263
+    )
+
+
 #####
-# Regression test 9
+# Regression test 12
 # It tests if the Hurst exponent between `ts1`
 # and `ts2` is correct
 #####
 def test_dcca_2():
     pydcca = fathon.DCCA(ts1, ts2)
     winSizes = fu.linRangeByStep(10, 200, step=2)
-    n, F = pydcca.computeFlucVec(winSizes, polOrd=2, absVals=False, overlap=False, revSeg=False)
-    
+    n, F = pydcca.computeFlucVec(
+        winSizes, polOrd=2, absVals=False, overlap=False, revSeg=False
+    )
+
     assert math.isclose(F[9], 0.08470236108797902)
-    
+
+
 #####
-# Regression test 10
+# Regression test 12
 # It tests if the Hurst exponent between `ts1`
 # and `ts2` is correct
 #####
 def test_dcca_3():
     pydcca = fathon.DCCA(ts1, ts2)
     winSizes = fu.linRangeByStep(10, 200, step=2)
-    n, F = pydcca.computeFlucVec(winSizes, polOrd=1, absVals=False, overlap=False, revSeg=True)
-    
+    n, F = pydcca.computeFlucVec(
+        winSizes, polOrd=1, absVals=False, overlap=False, revSeg=True
+    )
+
     assert math.isclose(F[23], 8.611065211944974)
-    
+
+
 #####
-# Regression test 11
+# Regression test 14
 # It tests if the Hurst exponent between `ts1`
 # and `ts2` is correct
 #####
 def test_dcca_4():
     pydcca = fathon.DCCA(ts1, ts2)
     winSizes = fu.linRangeByStep(10, 200, step=2)
-    n, F = pydcca.computeFlucVec(winSizes, polOrd=1, absVals=True, overlap=False, revSeg=True)
+    n, F = pydcca.computeFlucVec(
+        winSizes, polOrd=1, absVals=True, overlap=False, revSeg=True
+    )
     H, H_int = pydcca.fitFlucVec()
-    
+
     assert math.isclose(H, 0.859119892990511)
-    
+
+
 #####
-# Regression test 12
+# Regression test 15
 # It tests if the Hurst exponent between `ts1`
 # and `ts2` is correct
 #####
 def test_dcca_5():
     pydcca = fathon.DCCA(ts1, ts2)
     winSizes = fu.linRangeByStep(10, 200, step=2)
-    n, F = pydcca.computeFlucVec(winSizes, polOrd=1, absVals=True, overlap=False, revSeg=False)
+    n, F = pydcca.computeFlucVec(
+        winSizes, polOrd=1, absVals=True, overlap=False, revSeg=False
+    )
     H, H_int = pydcca.fitFlucVec()
-    
+
     assert math.isclose(H, 0.8259796205478073)
-    
+
+
 #####
-# Regression test 13
+# Regression test 16
 # It tests if one element of the cross-correlation
 # coefficient between `ts1` and `ts2` is correct
 #####
@@ -474,9 +671,10 @@ def test_rho_2():
     n3, rho = pydcca.computeRho(winSizes, overlap=False, revSeg=False)
 
     assert math.isclose(rho[28], 0.39579454461767466)
-    
+
+
 #####
-# Regression test 14
+# Regression test 17
 # It tests if the generalised Hurst exponent of `ts1` and `ts3`
 # for q = 3 and q = 0 is correct
 #####
@@ -490,8 +688,9 @@ def test_mfdcca():
     assert math.isclose(H2[3], 0.9702432083885226)
     assert math.isclose(H2[6], 0.8611368333991902)
 
+
 #####
-# Regression test 15
+# Regression test 18
 # It tests if the second element of the multifractal
 # spectrum of `ts1` and `ts3` is correct
 #####

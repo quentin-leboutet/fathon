@@ -45,9 +45,35 @@ def test_dfa_save_load():
     H_2, I_2 = dfa_2.fitFlucVec(100, 300)
     assert H_2 == H
     assert I_2 == I
-
+    
 #####
 # Functionality test 2
+# Save DMA object and reload
+#####
+def test_dma_save_load():
+    dma = fathon.DMA(fu.toAggregated(ts))
+    # save and load with empty results
+    dma.saveObject(get_object_path('dma_obj'))
+    n_load = fu.getObjectMember(get_object_path('dma_obj', ext=True), 'n')
+    F_load = fu.getObjectMember(get_object_path('dma_obj', ext=True), 'F')
+    assert np.array_equal(n_load, [])
+    assert np.array_equal(F_load, [])
+    #save and load with results
+    n, F = dma.computeFlucVec(fu.linRangeByStep(10, 500))
+    H, I = dma.fitFlucVec(100, 300)
+    dma.saveObject(get_object_path('dma_obj'))
+    n_load = fu.getObjectMember(get_object_path('dma_obj', ext=True), 'n')
+    F_load = fu.getObjectMember(get_object_path('dma_obj', ext=True), 'F')
+    assert np.array_equal(n_load, n)
+    assert np.array_equal(F_load, F)
+    # DMA from file
+    dma_2 = fathon.DMA(get_object_path('dma_obj', ext=True))
+    H_2, I_2 = dma_2.fitFlucVec(100, 300)
+    assert H_2 == H
+    assert I_2 == I
+
+#####
+# Functionality test 3
 # Save MFDFA object and reload
 #####
 def test_mfdfa_save_load():
@@ -81,7 +107,41 @@ def test_mfdfa_save_load():
     assert np.array_equal(I_2, I)
 
 #####
-# Functionality test 3
+# Functionality test 4
+# Save MFDMA object and reload
+#####
+def test_mfdma_save_load():
+    mfdma = fathon.MFDMA(fu.toAggregated(ts))
+    # save and load with empty results
+    mfdma.saveObject(get_object_path('mfdma_obj'))
+    n_load = fu.getObjectMember(get_object_path('mfdma_obj', ext=True), 'n')
+    F_load = fu.getObjectMember(get_object_path('mfdma_obj', ext=True), 'F')
+    q_list_load = fu.getObjectMember(get_object_path('mfdma_obj', ext=True), 'qList')
+    list_h_load = fu.getObjectMember(get_object_path('mfdma_obj', ext=True), 'listH')
+    assert np.array_equal(n_load, [])
+    assert np.array_equal(F_load, [])
+    assert np.array_equal(q_list_load, [])
+    assert np.array_equal(list_h_load, [])
+    #save and load with results
+    n, F = mfdma.computeFlucVec(fu.linRangeByStep(10, 500), fu.linRangeByStep(-1, 1))
+    H, I = mfdma.fitFlucVec(100, 300)
+    mfdma.saveObject(get_object_path('mfdma_obj'))
+    n_load = fu.getObjectMember(get_object_path('mfdma_obj', ext=True), 'n')
+    F_load = fu.getObjectMember(get_object_path('mfdma_obj', ext=True), 'F')
+    q_list_load = fu.getObjectMember(get_object_path('mfdma_obj', ext=True), 'qList')
+    list_h_load = fu.getObjectMember(get_object_path('mfdma_obj', ext=True), 'listH')
+    assert np.array_equal(n_load, n)
+    assert np.array_equal(F_load, F)
+    assert np.array_equal(q_list_load, fu.linRangeByStep(-1, 1))
+    assert np.array_equal(list_h_load, H)
+    # MFDFA from file
+    mfdma_2 = fathon.MFDMA(get_object_path('mfdma_obj', ext=True))
+    H_2, I_2 = mfdma_2.fitFlucVec(100, 300)
+    assert np.array_equal(H_2, H)
+    assert np.array_equal(I_2, I)
+    
+#####
+# Functionality test 5
 # Save HT object and reload
 #####
 def test_ht_save_load():
@@ -97,7 +157,7 @@ def test_ht_save_load():
     assert np.array_equal(ht_load, ht_mtx)
 
 #####
-# Functionality test 4
+# Functionality test 6
 # Save DCCA object and reload
 #####
 def test_dcca_save_load():
@@ -171,7 +231,7 @@ def test_dcca_save_load():
     assert np.array_equal(conf_down_load, conf_down)
     
 #####
-# Functionality test 5
+# Functionality test 7
 # Save MFDCCA object and reload
 #####
 def test_mfdcca_save_load():

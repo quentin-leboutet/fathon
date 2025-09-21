@@ -1,4 +1,4 @@
-#    mfdfa.pyx - mfdfa algorithm of fathon package
+#    mfdma.pyx - mfdma algorithm of fathon package
 #    Copyright (C) 2019-  Stefano Bianchi
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -24,11 +24,11 @@ import ctypes
 import pickle
 
 cdef extern from "cLoops.h" nogil:
-    void flucMFDFAForwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
-    void flucMFDFAForwBackwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
+    void flucMFDMAForwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
+    void flucMFDMAForwBackwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
 
-cdef class MFDFA:
-    """MultiFractal Detrended Fluctuation Analysis class.
+cdef class MFDMA:
+    """MultiFractal Detrended Moving Average class.
 
     Parameters
     ----------
@@ -58,8 +58,8 @@ cdef class MFDFA:
                 f = open(tsVec, 'rb')
                 data = pickle.load(f)
                 f.close()
-                if data['kind'] != 'mfdfa':
-                    raise ValueError('Error: Loaded object is not a MFDFA object.')
+                if data['kind'] != 'mfdma':
+                    raise ValueError('Error: Loaded object is not a MFDMA object.')
                 else:
                     self.tsVec = np.array(data['tsVec'], dtype=float)
                     self.n = np.array(data['n'], dtype=ctypes.c_int)
@@ -97,9 +97,9 @@ cdef class MFDFA:
         
         with nogil:
             if revSeg:
-                flucMFDFAForwBackwCompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, &q_list[0], q_list_len, polOrd, &mtxf[0])
+                flucMFDMAForwBackwCompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, &q_list[0], q_list_len, polOrd, &mtxf[0])
             else:
-                flucMFDFAForwCompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, &q_list[0], q_list_len, polOrd, &mtxf[0])
+                flucMFDMAForwCompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, &q_list[0], q_list_len, polOrd, &mtxf[0])
                         
         return vecn, np.reshape(mtxf, (q_list_len, nLen))
 
@@ -268,7 +268,7 @@ cdef class MFDFA:
             Output binary file. `.fathon` extension will be appended to the file name.
         """
         saveDict = {}
-        saveDict['kind'] = 'mfdfa'
+        saveDict['kind'] = 'mfdma'
         saveDict['tsVec'] = self.tsVec.tolist()
         try:
             saveDict['n'] = self.n.tolist()

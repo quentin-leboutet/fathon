@@ -20,8 +20,11 @@ extern void flucDFAForwBackwCompute(double *y, double *t, int N, int *wins, int 
 extern void flucUDMACompute(double *y_vec, int y_len, int *wins_vec, int num_wins, int sgPolyOrder, double *f_vec);
 extern void flucDMAForwCompute(double *y, int N, int *wins, int n_wins, int sgPolyOrder, double *f_vec);
 extern void flucDMAForwBackwCompute(double *y, int N, int *wins, int n_wins, int sgPolyOrder, double *f_vec);
+extern void flucDMAForwComputeFastLin(double *y, int N, int *wins, int n_wins, double *f_vec);
 extern void flucMFDFAForwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec);
 extern void flucMFDFAForwBackwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec);
+extern void flucMFDMAForwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec);
+extern void flucMFDMAForwBackwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec);
 extern void flucDCCAAbsCompute(double *y1, double *y2, double *t, int N, int *wins, int n_wins, int pol_ord, double *f_vec);
 extern void flucDCCANoAbsCompute(double *y1, double *y2, double *t, int N, int *wins, int n_wins, int pol_ord, double *f_vec);
 extern double HTCompute(double *y, double *t, int scale, int N, int pol_ord, int v);

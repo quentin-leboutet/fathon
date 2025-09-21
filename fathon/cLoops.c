@@ -543,6 +543,71 @@ void flucDMAForwBackwCompute(double *y, int N, int *wins, int n_wins, int sgPoly
     }
 }   
 
+static inline void build_prefix_arrays(const double *y, int N,
+                                       double **pY, double **pY2,
+                                       double **pX, double **pX2, double **pXY)
+{
+    *pY  = (double*)malloc((N+1)*sizeof(double));
+    *pY2 = (double*)malloc((N+1)*sizeof(double));
+    *pX  = (double*)malloc((N+1)*sizeof(double));
+    *pX2 = (double*)malloc((N+1)*sizeof(double));
+    *pXY = (double*)malloc((N+1)*sizeof(double));
+    (*pY)[0]=(*pY2)[0]=(*pX)[0]=(*pX2)[0]=(*pXY)[0]=0.0;
+    for(int i=0;i<N;i++){
+        double x = (double)i;
+        double yy = y[i];
+        (*pY)[i+1]  = (*pY)[i]  + yy;
+        (*pY2)[i+1] = (*pY2)[i] + yy*yy;
+        (*pX)[i+1]  = (*pX)[i]  + x;
+        (*pX2)[i+1] = (*pX2)[i] + x*x;
+        (*pXY)[i+1] = (*pXY)[i] + x*yy;
+    }
+}
+
+static inline void window_moments(int a,int b, // inclusive a..b
+                                  double *pY,double *pY2,double *pX,double *pX2,double *pXY,
+                                  double *Sx,double *Sy,double *Sxx,double *Syy,double *Sxy)
+{
+    int len = b - a + 1;
+    *Sy  = pY[b+1]  - pY[a];
+    *Syy = pY2[b+1] - pY2[a];
+    *Sx  = pX[b+1]  - pX[a];
+    *Sxx = pX2[b+1] - pX2[a];
+    *Sxy = pXY[b+1] - pXY[a];
+}
+
+void flucDMAForwComputeFastLin(double *y, int N, int *wins, int n_wins, double *f_vec)
+{
+    double *pY,*pY2,*pX,*pX2,*pXY;
+    build_prefix_arrays(y,N,&pY,&pY2,&pX,&pX2,&pXY);
+
+#pragma omp parallel for
+    for(int iw=0;iw<n_wins;iw++){
+        int w = wins[iw];
+        if(w < 2){ f_vec[iw]=0.0; continue; }
+        int nBlocks = N / w;
+        double acc = 0.0;
+        for(int b=0;b<nBlocks;b++){
+            int a = b*w;
+            int bidx = a + w - 1;
+            double Sx,Sy,Sxx,Syy,Sxy;
+            window_moments(a,bidx,pY,pY2,pX,pX2,pXY,&Sx,&Sy,&Sxx,&Syy,&Sxy);
+            double n = (double)w;
+            double denom = n*Sxx - Sx*Sx;
+            double slope = (denom!=0.0)? (n*Sxy - Sx*Sy)/denom : 0.0;
+            double intercept = (Sy - slope*Sx)/n;
+
+            // Residual variance: sum (y - (mx + c))^2 = Syy - 2m Sxy - 2c Sy + m^2 Sxx + 2 m c Sx + n c^2
+            double m = slope, c = intercept;
+            double SSE = Syy - 2.0*m*Sxy - 2.0*c*Sy + m*m*Sxx + 2.0*m*c*Sx + n*c*c;
+            if(SSE < 0.0) SSE = 0.0;
+            acc += SSE / n;
+        }
+        f_vec[iw] = sqrt(acc / (double)nBlocks);
+    }
+
+    free(pY); free(pY2); free(pX); free(pX2); free(pXY);
+}
 //main loop for MFDFA (computes fluctuations starting from the beginning of the array y)
 void flucMFDFAForwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
 {
@@ -694,6 +759,169 @@ void flucMFDFAForwBackwCompute(double *y, double *t, int N, int *wins, int n_win
             {
                 f_vec[iq * n_wins + i] = pow(f / (double)(2 * N_s), 1 / (double)q);
             }
+        }
+    }
+}
+
+//main loop for MFDMA (computes fluctuations starting from the beginning of the array y)
+void flucMFDMAForwCompute(double *y, double *t, int N,
+                          int *wins, int n_wins,
+                          double *qs, int n_q,
+                          int pol_ord,
+                          double *f_vec)
+{
+    (void)t; // not used in (MF)DMA with uniform local coordinate
+
+#ifdef _WIN64
+#pragma omp parallel for
+    for (int iq = 0; iq < n_q; iq++)
+    {
+        for (int i = 0; i < n_wins; i++)
+#else
+#pragma omp parallel for collapse(2)
+    for (int iq = 0; iq < n_q; iq++)
+    {
+        for (int i = 0; i < n_wins; i++)
+#endif
+        {
+            const double q = qs[iq];
+            const int curr_win_size = wins[i];
+            const int p = pol_ord;
+
+            if (curr_win_size <= p) {
+                f_vec[iq * n_wins + i] = 0.0;
+                continue;
+            }
+
+            const int n_segments = N / curr_win_size;
+
+            // Precompute S and M template once per (window size)
+            double *S  = (double *)calloc(2*p + 1, sizeof(double));
+            double *M0 = (double *)malloc((size_t)(p+1)*(p+1)*sizeof(double));
+            mf_build_moments_S(curr_win_size, p, S);
+            mf_build_M_template(S, p, M0);
+
+            // Scratch reused across segments
+            double *M = (double *)malloc((size_t)(p+1)*(p+1)*sizeof(double));
+            double *b = (double *)malloc((size_t)(p+1) * sizeof(double));
+
+            double acc = 0.0; // accumulator of either logs or power-means
+#ifdef _WIN64
+            for (int seg = 0; seg < n_segments; seg++)
+#else
+            for (int seg = 0; seg < n_segments; seg++)
+#endif
+            {
+                const int start = seg * curr_win_size;
+                const double ms = mf_block_mean_square(y, start, curr_win_size, p, M0, M, b);
+                if ((q >= LQ) && (q <= HQ)) {
+                    // geometric mean of RMS -> 0.5 factor applies outside via the final exp
+                    // (keep log of mean square, we'll divide by 2 later)
+                    acc += log(ms);
+                } else {
+                    acc += pow(ms, 0.5 * q);
+                }
+            }
+
+            double result;
+            if ((q >= LQ) && (q <= HQ)) {
+                // RMS geometric mean: exp( (1/(2*n_segments)) * sum log(ms) )
+                result = exp(acc / (2.0 * (double)n_segments));
+            } else {
+                // Power mean of RMS: ( (1/n_segments) * sum ms^{q/2} )^{1/q}
+                result = pow(acc / (double)n_segments, 1.0 / q);
+            }
+
+            f_vec[iq * n_wins + i] = result;
+
+            free(S);
+            free(M0);
+            free(M);
+            free(b);
+        }
+    }
+}
+
+//main loop for MFDMA (computes fluctuations starting from the beginning of the array y
+//and then computes fluctuations again starting from the end of the array y)
+void flucMFDMAForwBackwCompute(double *y, double *t, int N,
+                               int *wins, int n_wins,
+                               double *qs, int n_q,
+                               int pol_ord,
+                               double *f_vec)
+{
+    (void)t; // not used in (MF)DMA with uniform local coordinate
+
+#ifdef _WIN64
+#pragma omp parallel for
+    for (int iq = 0; iq < n_q; iq++)
+    {
+        for (int i = 0; i < n_wins; i++)
+#else
+#pragma omp parallel for collapse(2)
+    for (int iq = 0; iq < n_q; iq++)
+    {
+        for (int i = 0; i < n_wins; i++)
+#endif
+        {
+            const double q = qs[iq];
+            const int curr_win_size = wins[i];
+            const int p = pol_ord;
+
+            if (curr_win_size <= p) {
+                f_vec[iq * n_wins + i] = 0.0;
+                continue;
+            }
+
+            const int n_segments = N / curr_win_size;
+            const int leftover   = N - n_segments * curr_win_size;
+
+            // Precompute S and M template once per (window size)
+            double *S  = (double *)calloc(2*p + 1, sizeof(double));
+            double *M0 = (double *)malloc((size_t)(p+1)*(p+1)*sizeof(double));
+            mf_build_moments_S(curr_win_size, p, S);
+            mf_build_M_template(S, p, M0);
+
+            // Scratch reused across segments
+            double *M = (double *)malloc((size_t)(p+1)*(p+1)*sizeof(double));
+            double *b = (double *)malloc((size_t)(p+1) * sizeof(double));
+
+            double acc = 0.0; // will sum both directions
+#ifdef _WIN64
+            for (int seg = 0; seg < n_segments; seg++)
+#else
+            for (int seg = 0; seg < n_segments; seg++)
+#endif
+            {
+                // Forward block
+                const int start_forw = seg * curr_win_size;
+                const double ms1 = mf_block_mean_square(y, start_forw, curr_win_size, p, M0, M, b);
+
+                // Backward block (from the end; align blocks as in your DMA)
+                const int start_back = seg * curr_win_size + leftover;
+                const double ms2 = mf_block_mean_square(y, start_back, curr_win_size, p, M0, M, b);
+
+                if ((q >= LQ) && (q <= HQ)) {
+                    acc += (log(ms1) + log(ms2));
+                } else {
+                    acc += (pow(ms1, 0.5 * q) + pow(ms2, 0.5 * q));
+                }
+            }
+
+            double result;
+            if ((q >= LQ) && (q <= HQ)) {
+                // total blocks = 2*n_segments
+                result = exp(acc / (4.0 * (double)n_segments));
+            } else {
+                result = pow(acc / (2.0 * (double)n_segments), 1.0 / q);
+            }
+
+            f_vec[iq * n_wins + i] = result;
+
+            free(S);
+            free(M0);
+            free(M);
+            free(b);
         }
     }
 }
