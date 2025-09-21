@@ -174,7 +174,8 @@ def test_mat_mfdma_wn():
     np.testing.assert_allclose(
         Hq, [0.4583, 0.4555, 0.4546, 0.4515, 0.4445, 0.4340], rtol=1e-4, atol=0
     )
-    
+
+
 #####
 # Functionality test 9
 # It tests MFDFA for the monofractal time series
@@ -216,6 +217,7 @@ def test_mat_mfdma_mn():
         Hq, [0.7542, 0.7392, 0.7301, 0.7240, 0.7149, 0.7023], rtol=1e-4, atol=0
     )
 
+
 #####
 # Functionality test 11
 # It tests MFDFA for the multifractal time series
@@ -256,6 +258,7 @@ def test_mat_mfdma_mf():
     np.testing.assert_allclose(
         Hq, [1.4477, 1.3064, 1.0823, 0.8846, 0.6606, 0.5174], rtol=1e-4, atol=0
     )
+
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -335,7 +338,7 @@ def test_dfa_pow_count():
     H1, H_int1 = pydfa.fitFlucVec()
 
     assert math.isclose(H1, 0.8465301940909294)
-    
+
 
 #####
 # Regression test 1.4
@@ -372,8 +375,8 @@ def test_udfa():
     H1, H_int1 = pydfa.fitFlucVec()
 
     assert math.isclose(H1, 0.47674272167783543)
-    
-    
+
+
 #####
 # Regression test 2
 # It tests if the Hurst exponent of `ts1` is correct
@@ -492,6 +495,7 @@ def test_mfdma():
 
     assert math.isclose(H2[2], 1.1956312585360254)
 
+
 #####
 # Regression test 5
 # It tests if the fifth element of the multifractal
@@ -522,8 +526,8 @@ def test_multifractal_spectrum_dma():
     a2, m2 = pymfdma.computeMultifractalSpectrum()
 
     assert math.isclose(m2[4], 0.8445200259231695)
-    
-    
+
+
 #####
 # Regression test 7
 # It tests if the fiftythird element of the cross-correlation

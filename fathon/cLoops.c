@@ -543,71 +543,6 @@ void flucDMAForwBackwCompute(double *y, int N, int *wins, int n_wins, int sgPoly
     }
 }   
 
-static inline void build_prefix_arrays(const double *y, int N,
-                                       double **pY, double **pY2,
-                                       double **pX, double **pX2, double **pXY)
-{
-    *pY  = (double*)malloc((N+1)*sizeof(double));
-    *pY2 = (double*)malloc((N+1)*sizeof(double));
-    *pX  = (double*)malloc((N+1)*sizeof(double));
-    *pX2 = (double*)malloc((N+1)*sizeof(double));
-    *pXY = (double*)malloc((N+1)*sizeof(double));
-    (*pY)[0]=(*pY2)[0]=(*pX)[0]=(*pX2)[0]=(*pXY)[0]=0.0;
-    for(int i=0;i<N;i++){
-        double x = (double)i;
-        double yy = y[i];
-        (*pY)[i+1]  = (*pY)[i]  + yy;
-        (*pY2)[i+1] = (*pY2)[i] + yy*yy;
-        (*pX)[i+1]  = (*pX)[i]  + x;
-        (*pX2)[i+1] = (*pX2)[i] + x*x;
-        (*pXY)[i+1] = (*pXY)[i] + x*yy;
-    }
-}
-
-static inline void window_moments(int a,int b, // inclusive a..b
-                                  double *pY,double *pY2,double *pX,double *pX2,double *pXY,
-                                  double *Sx,double *Sy,double *Sxx,double *Syy,double *Sxy)
-{
-    int len = b - a + 1;
-    *Sy  = pY[b+1]  - pY[a];
-    *Syy = pY2[b+1] - pY2[a];
-    *Sx  = pX[b+1]  - pX[a];
-    *Sxx = pX2[b+1] - pX2[a];
-    *Sxy = pXY[b+1] - pXY[a];
-}
-
-void flucDMAForwComputeFastLin(double *y, int N, int *wins, int n_wins, double *f_vec)
-{
-    double *pY,*pY2,*pX,*pX2,*pXY;
-    build_prefix_arrays(y,N,&pY,&pY2,&pX,&pX2,&pXY);
-
-#pragma omp parallel for
-    for(int iw=0;iw<n_wins;iw++){
-        int w = wins[iw];
-        if(w < 2){ f_vec[iw]=0.0; continue; }
-        int nBlocks = N / w;
-        double acc = 0.0;
-        for(int b=0;b<nBlocks;b++){
-            int a = b*w;
-            int bidx = a + w - 1;
-            double Sx,Sy,Sxx,Syy,Sxy;
-            window_moments(a,bidx,pY,pY2,pX,pX2,pXY,&Sx,&Sy,&Sxx,&Syy,&Sxy);
-            double n = (double)w;
-            double denom = n*Sxx - Sx*Sx;
-            double slope = (denom!=0.0)? (n*Sxy - Sx*Sy)/denom : 0.0;
-            double intercept = (Sy - slope*Sx)/n;
-
-            // Residual variance: sum (y - (mx + c))^2 = Syy - 2m Sxy - 2c Sy + m^2 Sxx + 2 m c Sx + n c^2
-            double m = slope, c = intercept;
-            double SSE = Syy - 2.0*m*Sxy - 2.0*c*Sy + m*m*Sxx + 2.0*m*c*Sx + n*c*c;
-            if(SSE < 0.0) SSE = 0.0;
-            acc += SSE / n;
-        }
-        f_vec[iw] = sqrt(acc / (double)nBlocks);
-    }
-
-    free(pY); free(pY2); free(pX); free(pX2); free(pXY);
-}
 //main loop for MFDFA (computes fluctuations starting from the beginning of the array y)
 void flucMFDFAForwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
 {
@@ -764,14 +699,12 @@ void flucMFDFAForwBackwCompute(double *y, double *t, int N, int *wins, int n_win
 }
 
 //main loop for MFDMA (computes fluctuations starting from the beginning of the array y)
-void flucMFDMAForwCompute(double *y, double *t, int N,
+void flucMFDMAForwCompute(double *y, int N,
                           int *wins, int n_wins,
                           double *qs, int n_q,
                           int pol_ord,
                           double *f_vec)
 {
-    (void)t; // not used in (MF)DMA with uniform local coordinate
-
 #ifdef _WIN64
 #pragma omp parallel for
     for (int iq = 0; iq < n_q; iq++)
@@ -844,14 +777,12 @@ void flucMFDMAForwCompute(double *y, double *t, int N,
 
 //main loop for MFDMA (computes fluctuations starting from the beginning of the array y
 //and then computes fluctuations again starting from the end of the array y)
-void flucMFDMAForwBackwCompute(double *y, double *t, int N,
+void flucMFDMAForwBackwCompute(double *y, int N,
                                int *wins, int n_wins,
                                double *qs, int n_q,
                                int pol_ord,
                                double *f_vec)
 {
-    (void)t; // not used in (MF)DMA with uniform local coordinate
-
 #ifdef _WIN64
 #pragma omp parallel for
     for (int iq = 0; iq < n_q; iq++)

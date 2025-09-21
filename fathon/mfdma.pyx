@@ -24,8 +24,8 @@ import ctypes
 import pickle
 
 cdef extern from "cLoops.h" nogil:
-    void flucMFDMAForwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
-    void flucMFDMAForwBackwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
+    void flucMFDMAForwCompute(double *y, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
+    void flucMFDMAForwBackwCompute(double *y, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
 
 cdef class MFDMA:
     """MultiFractal Detrended Moving Average class.
@@ -97,9 +97,9 @@ cdef class MFDMA:
         
         with nogil:
             if revSeg:
-                flucMFDMAForwBackwCompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, &q_list[0], q_list_len, polOrd, &mtxf[0])
+                flucMFDMAForwBackwCompute(&vects[0], tsLen, &vecn[0], nLen, &q_list[0], q_list_len, polOrd, &mtxf[0])
             else:
-                flucMFDMAForwCompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, &q_list[0], q_list_len, polOrd, &mtxf[0])
+                flucMFDMAForwCompute(&vects[0], tsLen, &vecn[0], nLen, &q_list[0], q_list_len, polOrd, &mtxf[0])
                         
         return vecn, np.reshape(mtxf, (q_list_len, nLen))
 

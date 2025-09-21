@@ -33,7 +33,7 @@ plt.plot(np.log(n), list_H_intercept[-1]+list_H[-1]*np.log(n), 'k-',
          label='h_{:.1f} = {:.2f}'.format(qs[-1], list_H[-1]))
 plt.xlabel('ln(n)', fontsize=14)
 plt.ylabel('ln(F(n))', fontsize=14)
-plt.title('MFDFA', fontsize=14)
+plt.title('MFDMA', fontsize=14)
 plt.legend(loc=0, fontsize=14)
 plt.show()
 
