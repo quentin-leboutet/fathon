@@ -62,8 +62,10 @@ if __name__ == "__main__":
         running_os = platform.system()
         
         extensions = [get_extension("fathon.dfa", os.path.join("fathon", "dfa.pyx"), running_os),
+                      get_extension("fathon.dma", os.path.join("fathon", "dma.pyx"), running_os),
                       get_extension("fathon.dcca", os.path.join("fathon", "dcca.pyx"), running_os),
                       get_extension("fathon.mfdfa", os.path.join("fathon", "mfdfa.pyx"), running_os),
+                      get_extension("fathon.mfdma", os.path.join("fathon", "mfdma.pyx"), running_os),
                       get_extension("fathon.mfdcca", os.path.join("fathon", "mfdcca.pyx"), running_os),
                       get_extension("fathon.ht", os.path.join("fathon", "ht.pyx"), running_os)]
                           
@@ -100,6 +102,7 @@ if __name__ == "__main__":
                            "Programming Language :: Python :: 3.10",
                            "Programming Language :: Python :: 3.11",
                            "Programming Language :: Python :: 3.12",
+                           "Programming Language :: Python :: 3.13",
                            "Topic :: Scientific/Engineering"],
               python_requires=">=3.8",
               install_requires=["numpy>=1.24.4"],

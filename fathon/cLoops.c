@@ -203,6 +203,346 @@ void flucDFAForwBackwCompute(double *y, double *t, int N, int *wins, int n_wins,
     }
 }
 
+//main loop for unbiased DMA
+void flucUDMACompute(double *y_vec, int y_len, int *wins_vec, int num_wins, int sgPolyOrder, double *f_vec)
+{
+#ifdef _WIN64
+    int i = 0;
+#endif
+
+#pragma omp parallel for
+#ifdef _WIN64
+    for(i = 0; i < num_wins; i++)
+#else
+    for(int i=0; i < num_wins; i++)
+#endif
+    {
+        int s = wins_vec[i];               // subwindow size
+        int p = sgPolyOrder;               // polynomial order
+        if(s <= p) {
+            // degenerate case
+            f_vec[i] = 0.0;
+            continue;
+        }
+
+        // We'll accumulate a corrected sum into "f"
+        double f = 0.0;
+        // The number of subwindows of length s
+        int n_wins = y_len - s + 1;
+
+        // For each subwindow [start..start+s-1]
+        for(int start=0; start < n_wins; start++)
+        {
+            // 1) Build partial sums S(k), T(k) for polynomial fit
+            double *S = (double *)calloc(2*p+1, sizeof(double));
+            double *T = (double *)calloc(p+1,     sizeof(double));
+
+            for(int w=0; w < s; w++)
+            {
+                double x = (double)w;  // local coordinate
+                double y = y_vec[start + w];
+                // accumulate for X^T X
+                for(int kPow=0; kPow <= 2*p; kPow++){
+                    S[kPow] += quickPow(x, kPow);
+                }
+                // accumulate for X^T y
+                for(int kPow=0; kPow <= p; kPow++){
+                    T[kPow] += (y * quickPow(x, kPow));
+                }
+            }
+
+            // form normal eq M(a,b) = S(a+b), b[a] = T[a]
+            double *M = (double *)calloc((p+1)*(p+1), sizeof(double));
+            double *coef = (double *)calloc(p+1, sizeof(double));
+            for(int a=0; a<=p; a++){
+                coef[a] = T[a];
+                for(int bcol=0; bcol<=p; bcol++){
+                    M[a*(p+1) + bcol] = S[a + bcol];
+                }
+            }
+
+            solveLinearSystem(M, coef, p);
+
+            free(S);
+            free(T);
+            free(M);
+
+            // 2) Compute the residual df[j] = y_vec[...] - polyFit(x=j)
+            double *df = (double *)calloc(s, sizeof(double));
+            for(int w=0; w<s; w++)
+            {
+                double x = (double)w;
+                double fitVal = 0.0;
+                for(int mPow=0; mPow<=p; mPow++){
+                    fitVal += coef[mPow]*quickPow(x, mPow);
+                }
+                df[w] = y_vec[start + w] - fitVal;
+            }
+            free(coef);
+
+            // 3) We do the "unbiased correction" from cDMA4:
+            //    sums of df, df^2, df(odd), df(even), shift sums, etc.
+            double df_sum=0.0, df_2_sum=0.0;
+            double df_odd_sum=0.0, df_even_sum=0.0;
+            double df_shift_sum=0.0;
+
+            for(int j=0; j<s; j++){
+                double d = df[j];
+                df_sum += d;
+                df_2_sum += d*d;
+            }
+            // odd/even in cDMA usage typically means j=0 is "even" or "odd"?
+            // In the original code, it was j=0.., with j%2=0 => "df_odd_sum".
+            // We'll do the same:
+            for(int j=0; j<s; j+=2){
+                df_odd_sum += df[j];
+            }
+            for(int j=1; j<s; j+=2){
+                df_even_sum += df[j];
+            }
+            for(int j=0; j<(s-1); j++){
+                df_shift_sum += (df[j]*df[j+1]);
+            }
+
+            // 4) from cDMA4 logic:
+            double df_neg_mean = (df_odd_sum - df_even_sum) / (double)s;
+            double df_neg_var = df_2_sum/(double)s - df_neg_mean*df_neg_mean;
+
+            double df_pos_mean = df_sum / (double)s;
+            double df_pos_var  = df_2_sum/(double)s - df_pos_mean*df_pos_mean;
+
+            double df_pos_shift = ( df_shift_sum
+                                    + df_pos_mean*(df[0] + df[s-1]
+                                    - df_pos_mean*(s+1)) ) / df_pos_var;
+
+            double df_neg_shift = ( - df_shift_sum
+                                    + df_neg_mean*( df[0] + pow(-1.0, s+1)*df[s-1]
+                                    - df_neg_mean*(s+1)) ) / df_neg_var;
+
+            // from cDMA4:
+            double rho_A = (s + df_pos_shift) / (2.0*s - 1.0);
+            double rho_B = (s + df_neg_shift) / (2.0*s - 1.0);
+
+            double rho_A_star = rho_A + (1 + 3*rho_A)/(2.0*s);
+            double rho_B_star = rho_B + (1 + 3*rho_B)/(2.0*s);
+
+            double local_contrib = (rho_A_star + rho_B_star)
+                                    * (1.0 - 1.0/(2.0*s))
+                                    * df_pos_var;
+
+            f += local_contrib;
+
+            free(df);
+        }
+
+        // 5) final unbiased scaling => same as cDMA4
+        //    sqrt( f * sqrt((s-1)/s) / n_wins )
+        double factor = sqrt( (double)(s-1) / (double)s );
+        f_vec[i] = sqrt( f * factor / (double)n_wins );
+    }
+}
+
+
+//main loop for DMA (computes fluctuations starting from the beginning of the array y)
+void flucDMAForwCompute(double *y, int N, int *wins, int n_wins, int sgPolyOrder, double *f_vec)
+{
+    #ifdef _WIN64
+    int i = 0;
+#endif
+
+#pragma omp parallel for
+#ifdef _WIN64
+    for(i = 0; i < n_wins; i++)
+#else
+    for(int i = 0; i < n_wins; i++)
+#endif
+    {
+        int curr_win_size = wins[i];
+        int p = sgPolyOrder;
+
+        if(curr_win_size <= p) {
+            f_vec[i] = 0.0;
+            continue;
+        }
+
+        // Number of segments we can fit in the data
+        int n_segments = N / curr_win_size;
+
+        double sumSq = 0.0; // accumulate sum of squared residuals
+
+        for(int seg = 0; seg < n_segments; seg++)
+        {
+            int start = seg * curr_win_size;
+
+            // Build partial sums S, T for sub-block [start..start+curr_win_size-1]
+            double *S = (double *)calloc(2*p+1, sizeof(double));
+            double *T = (double *)calloc(p+1,     sizeof(double));
+
+            for(int w = 0; w < curr_win_size; w++)
+            {
+                double x = (double)w; // local coordinate
+                double val = y[start + w];
+                for(int kPow = 0; kPow <= 2*p; kPow++)
+                    S[kPow] += quickPow(x, kPow);
+
+                for(int kPow = 0; kPow <= p; kPow++)
+                    T[kPow] += val * quickPow(x, kPow);
+            }
+
+            // Solve normal eq
+            double *M = (double *)calloc((p+1)*(p+1), sizeof(double));
+            double *b = (double *)calloc(p+1,         sizeof(double));
+            for(int a=0; a<=p; a++){
+                b[a] = T[a];
+                for(int bcol=0; bcol<=p; bcol++){
+                    M[a*(p+1) + bcol] = S[a+bcol];
+                }
+            }
+            solveLinearSystem(M, b, p);
+
+            // Accumulate residuals
+            double blockSum = 0.0;
+            for(int w = 0; w < curr_win_size; w++)
+            {
+                double x = (double)w;
+                double fitVal = 0.0;
+                for(int kk=0; kk<=p; kk++)
+                    fitVal += b[kk]*quickPow(x, kk);
+
+                double diff = y[start + w] - fitVal;
+                blockSum += diff*diff;
+            }
+
+            sumSq += blockSum;
+
+            free(S);
+            free(T);
+            free(M);
+            free(b);
+        }
+
+        // final fluctuation for this window size
+        double meanSq = sumSq / (n_segments*curr_win_size);
+        f_vec[i] = sqrt(meanSq);
+    }
+}
+
+//main loop for DMA (computes fluctuations starting from the beginning of the array y
+//and then computes fluctuations again starting from the end of the array y)
+void flucDMAForwBackwCompute(double *y, int N, int *wins, int n_wins, int sgPolyOrder, double *f_vec)
+{
+#ifdef _WIN64
+    int i = 0;
+#endif
+
+#pragma omp parallel for
+#ifdef _WIN64
+    for(i = 0; i < n_wins; i++)
+#else
+    for(int i = 0; i < n_wins; i++)
+#endif
+    {
+        int curr_win_size = wins[i];
+        int p = sgPolyOrder;
+
+        if(curr_win_size <= p) {
+            f_vec[i] = 0.0;
+            continue;
+        }
+
+        int n_segments = N / curr_win_size;
+        double sumSq = 0.0;
+
+        for(int seg = 0; seg < n_segments; seg++)
+        {
+            // === Forward block ===
+            int start_forw = seg*curr_win_size;
+            {
+                double *S = (double *)calloc(2*p+1, sizeof(double));
+                double *T = (double *)calloc(p+1,     sizeof(double));
+
+                for(int w=0; w<curr_win_size; w++){
+                    double x = (double)w;
+                    double val = y[start_forw + w];
+                    for(int kPow=0; kPow <= 2*p; kPow++)
+                        S[kPow] += quickPow(x, kPow);
+                    for(int kPow=0; kPow <= p; kPow++)
+                        T[kPow] += val * quickPow(x, kPow);
+                }
+                double *M = (double *)calloc((p+1)*(p+1), sizeof(double));
+                double *b = (double *)calloc(p+1,         sizeof(double));
+                for(int a=0; a<=p; a++){
+                    b[a] = T[a];
+                    for(int bcol=0; bcol<=p; bcol++)
+                        M[a*(p+1)+bcol] = S[a+bcol];
+                }
+                solveLinearSystem(M, b, p);
+
+                double localSum = 0.0;
+                for(int w=0; w<curr_win_size; w++){
+                    double x = (double)w;
+                    double fitVal = 0.0;
+                    for(int kk=0; kk<=p; kk++)
+                        fitVal += b[kk]*quickPow(x, kk);
+                    double diff = y[start_forw + w] - fitVal;
+                    localSum += diff*diff;
+                }
+                sumSq += localSum;
+
+                free(S); free(T);
+                free(M); free(b);
+            }
+
+            // === Backward block ===
+            //   Start from the end of the array, stepping in segments of size curr_win_size
+            //   Typically (N - n_segments*curr_win_size) is leftover. So your code does:
+            int start_back = seg*curr_win_size + (N - n_segments*curr_win_size);
+            {
+                double *S = (double *)calloc(2*p+1, sizeof(double));
+                double *T = (double *)calloc(p+1,     sizeof(double));
+
+                for(int w=0; w<curr_win_size; w++){
+                    double x = (double)w;
+                    double val = y[start_back + w];
+                    for(int kPow=0; kPow <= 2*p; kPow++)
+                        S[kPow] += quickPow(x, kPow);
+                    for(int kPow=0; kPow <= p; kPow++)
+                        T[kPow] += val*quickPow(x, kPow);
+                }
+
+                double *M = (double *)calloc((p+1)*(p+1), sizeof(double));
+                double *b = (double *)calloc(p+1,         sizeof(double));
+                for(int a=0; a<=p; a++){
+                    b[a] = T[a];
+                    for(int bcol=0; bcol<=p; bcol++)
+                        M[a*(p+1) + bcol] = S[a+bcol];
+                }
+                solveLinearSystem(M, b, p);
+
+                double localSum = 0.0;
+                for(int w=0; w<curr_win_size; w++){
+                    double x = (double)w;
+                    double fitVal = 0.0;
+                    for(int kk=0; kk<=p; kk++)
+                        fitVal += b[kk]*quickPow(x, kk);
+                    double diff = y[start_back + w] - fitVal;
+                    localSum += diff*diff;
+                }
+                sumSq += localSum;
+
+                free(S); free(T);
+                free(M); free(b);
+            }
+        }
+
+        // Combine forward/backward residual => RMS
+        // The total # of blocks is 2*n_segments (forward + backward),
+        // each block size = curr_win_size
+        double meanSq = sumSq / (2.0 * n_segments * curr_win_size);
+        f_vec[i] = sqrt(meanSq);
+    }
+}   
+
 //main loop for MFDFA (computes fluctuations starting from the beginning of the array y)
 void flucMFDFAForwCompute(double *y, double *t, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
 {
@@ -354,6 +694,165 @@ void flucMFDFAForwBackwCompute(double *y, double *t, int N, int *wins, int n_win
             {
                 f_vec[iq * n_wins + i] = pow(f / (double)(2 * N_s), 1 / (double)q);
             }
+        }
+    }
+}
+
+//main loop for MFDMA (computes fluctuations starting from the beginning of the array y)
+void flucMFDMAForwCompute(double *y, int N,
+                          int *wins, int n_wins,
+                          double *qs, int n_q,
+                          int pol_ord,
+                          double *f_vec)
+{
+#ifdef _WIN64
+#pragma omp parallel for
+    for (int iq = 0; iq < n_q; iq++)
+    {
+        for (int i = 0; i < n_wins; i++)
+#else
+#pragma omp parallel for collapse(2)
+    for (int iq = 0; iq < n_q; iq++)
+    {
+        for (int i = 0; i < n_wins; i++)
+#endif
+        {
+            const double q = qs[iq];
+            const int curr_win_size = wins[i];
+            const int p = pol_ord;
+
+            if (curr_win_size <= p) {
+                f_vec[iq * n_wins + i] = 0.0;
+                continue;
+            }
+
+            const int n_segments = N / curr_win_size;
+
+            // Precompute S and M template once per (window size)
+            double *S  = (double *)calloc(2*p + 1, sizeof(double));
+            double *M0 = (double *)malloc((size_t)(p+1)*(p+1)*sizeof(double));
+            mf_build_moments_S(curr_win_size, p, S);
+            mf_build_M_template(S, p, M0);
+
+            // Scratch reused across segments
+            double *M = (double *)malloc((size_t)(p+1)*(p+1)*sizeof(double));
+            double *b = (double *)malloc((size_t)(p+1) * sizeof(double));
+
+            double acc = 0.0; // accumulator of either logs or power-means
+#ifdef _WIN64
+            for (int seg = 0; seg < n_segments; seg++)
+#else
+            for (int seg = 0; seg < n_segments; seg++)
+#endif
+            {
+                const int start = seg * curr_win_size;
+                const double ms = mf_block_mean_square(y, start, curr_win_size, p, M0, M, b);
+                if ((q >= LQ) && (q <= HQ)) {
+                    // geometric mean of RMS -> 0.5 factor applies outside via the final exp
+                    // (keep log of mean square, we'll divide by 2 later)
+                    acc += log(ms);
+                } else {
+                    acc += pow(ms, 0.5 * q);
+                }
+            }
+
+            double result;
+            if ((q >= LQ) && (q <= HQ)) {
+                // RMS geometric mean: exp( (1/(2*n_segments)) * sum log(ms) )
+                result = exp(acc / (2.0 * (double)n_segments));
+            } else {
+                // Power mean of RMS: ( (1/n_segments) * sum ms^{q/2} )^{1/q}
+                result = pow(acc / (double)n_segments, 1.0 / q);
+            }
+
+            f_vec[iq * n_wins + i] = result;
+
+            free(S);
+            free(M0);
+            free(M);
+            free(b);
+        }
+    }
+}
+
+//main loop for MFDMA (computes fluctuations starting from the beginning of the array y
+//and then computes fluctuations again starting from the end of the array y)
+void flucMFDMAForwBackwCompute(double *y, int N,
+                               int *wins, int n_wins,
+                               double *qs, int n_q,
+                               int pol_ord,
+                               double *f_vec)
+{
+#ifdef _WIN64
+#pragma omp parallel for
+    for (int iq = 0; iq < n_q; iq++)
+    {
+        for (int i = 0; i < n_wins; i++)
+#else
+#pragma omp parallel for collapse(2)
+    for (int iq = 0; iq < n_q; iq++)
+    {
+        for (int i = 0; i < n_wins; i++)
+#endif
+        {
+            const double q = qs[iq];
+            const int curr_win_size = wins[i];
+            const int p = pol_ord;
+
+            if (curr_win_size <= p) {
+                f_vec[iq * n_wins + i] = 0.0;
+                continue;
+            }
+
+            const int n_segments = N / curr_win_size;
+            const int leftover   = N - n_segments * curr_win_size;
+
+            // Precompute S and M template once per (window size)
+            double *S  = (double *)calloc(2*p + 1, sizeof(double));
+            double *M0 = (double *)malloc((size_t)(p+1)*(p+1)*sizeof(double));
+            mf_build_moments_S(curr_win_size, p, S);
+            mf_build_M_template(S, p, M0);
+
+            // Scratch reused across segments
+            double *M = (double *)malloc((size_t)(p+1)*(p+1)*sizeof(double));
+            double *b = (double *)malloc((size_t)(p+1) * sizeof(double));
+
+            double acc = 0.0; // will sum both directions
+#ifdef _WIN64
+            for (int seg = 0; seg < n_segments; seg++)
+#else
+            for (int seg = 0; seg < n_segments; seg++)
+#endif
+            {
+                // Forward block
+                const int start_forw = seg * curr_win_size;
+                const double ms1 = mf_block_mean_square(y, start_forw, curr_win_size, p, M0, M, b);
+
+                // Backward block (from the end; align blocks as in your DMA)
+                const int start_back = seg * curr_win_size + leftover;
+                const double ms2 = mf_block_mean_square(y, start_back, curr_win_size, p, M0, M, b);
+
+                if ((q >= LQ) && (q <= HQ)) {
+                    acc += (log(ms1) + log(ms2));
+                } else {
+                    acc += (pow(ms1, 0.5 * q) + pow(ms2, 0.5 * q));
+                }
+            }
+
+            double result;
+            if ((q >= LQ) && (q <= HQ)) {
+                // total blocks = 2*n_segments
+                result = exp(acc / (4.0 * (double)n_segments));
+            } else {
+                result = pow(acc / (2.0 * (double)n_segments), 1.0 / q);
+            }
+
+            f_vec[iq * n_wins + i] = result;
+
+            free(S);
+            free(M0);
+            free(M);
+            free(b);
         }
     }
 }

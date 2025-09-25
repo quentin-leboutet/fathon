@@ -16,9 +16,11 @@
 
 import platform
 import os
-    
+
 from .dfa import DFA
+from .dma import DMA
 from .mfdfa import MFDFA
+from .mfdma import MFDMA
 from .dcca import DCCA
 from .mfdcca import MFDCCA
 from .ht import HT
@@ -27,6 +29,6 @@ from .ht import HT
     and related algorithms.
 """
 
-__version__ = '1.3.3'
-__author__ = 'Stefano Bianchi'
-__git_repo__ = 'https://github.com/stfbnc/fathon'
+__version__ = "1.3.3"
+__author__ = "Stefano Bianchi"
+__git_repo__ = "https://github.com/stfbnc/fathon"

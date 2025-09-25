@@ -1,4 +1,4 @@
-#    dfa.pyx - dfa algorithm of fathon package
+#    dma.pyx - dma algorithm of fathon package
 #    Copyright (C) 2019-  Stefano Bianchi
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -24,12 +24,12 @@ import ctypes
 import pickle
 
 cdef extern from "cLoops.h" nogil:
-    void flucDFAForwCompute(double *y, double *t, int N, int *wins, int n_wins, int pol_ord, double *f_vec)
-    void flucDFAForwBackwCompute(double *y, double *t, int N, int *wins, int n_wins, int pol_ord, double *f_vec)
-    void flucUDFACompute(double *y_vec, double *t_vec, int y_len, int *wins_vec, int num_wins, int pol, double *f_vec)
+    void flucDMAForwCompute(double *y, int N, int *wins, int n_wins, int pol_ord, double *f_vec)
+    void flucDMAForwBackwCompute(double *y, int N, int *wins, int n_wins, int pol_ord, double *f_vec)
+    void flucUDMACompute(double *y_vec, int y_len, int *wins_vec, int num_wins, int pol, double *f_vec)
 
-cdef class DFA:
-    """Detrended Fluctuation Analysis class.
+cdef class DMA:
+    """Detrended Moving Average class.
 
     Parameters
     ----------
@@ -55,8 +55,8 @@ cdef class DFA:
                 f = open(tsVec, 'rb')
                 data = pickle.load(f)
                 f.close()
-                if data['kind'] != 'dfa':
-                    raise ValueError('Error: Loaded object is not a DFA object.')
+                if data['kind'] != 'dma':
+                    raise ValueError('Error: Loaded object is not a DMA object.')
                 else:
                     self.tsVec = np.array(data['tsVec'], dtype=float)
                     self.n = np.array(data['n'], dtype=ctypes.c_int)
@@ -80,18 +80,14 @@ cdef class DFA:
         nLen = len(vecn)
         tsLen = len(vects)
         
-        t = np.empty((tsLen, ), dtype=ctypes.c_double)
-        for j in prange(tsLen, nogil=True):
-            t[j] = float(j) + 1.0
-        
         with nogil:
             if unbiased:
-                flucUDFACompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, polOrd, &vecf[0])
+                flucUDMACompute(&vects[0], tsLen, &vecn[0], nLen, polOrd, &vecf[0])
             else:
                 if revSeg:
-                    flucDFAForwBackwCompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, polOrd, &vecf[0])
+                    flucDMAForwBackwCompute(&vects[0], tsLen, &vecn[0], nLen, polOrd, &vecf[0])
                 else:
-                    flucDFAForwCompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, polOrd, &vecf[0])
+                    flucDMAForwCompute(&vects[0], tsLen, &vecn[0], nLen, polOrd, &vecf[0])
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -108,7 +104,7 @@ cdef class DFA:
         revSeg : bool, optional
             If True, the computation of `F` is repeated starting from the end of the time series (default : False).
         unbiased : bool, optional
-            If True, the unbiased version of DFA is computed, and `revSeg` is ignored. To be used on short time series (default : False).
+            If True, the unbiased version of DMA is computed, and `revSeg` is ignored. To be used on short time series (default : False).
 
         Returns
         -------
@@ -119,8 +115,6 @@ cdef class DFA:
         """
         cdef int tsLen = len(self.tsVec)
 
-        if polOrd < 1:
-            raise ValueError('Error: Polynomial order must be greater than 0.')
         if len(winSizes) > 1:
             if winSizes[len(winSizes)-1] <= winSizes[0]:
                 raise ValueError('Error: `winSizes[-1]` must be greater than variable `winSizes[0]`.')
@@ -241,7 +235,7 @@ cdef class DFA:
             Output binary file. `.fathon` extension will be appended to the file name.
         """
         saveDict = {}
-        saveDict['kind'] = 'dfa'
+        saveDict['kind'] = 'dma'
         saveDict['tsVec'] = self.tsVec.tolist()
         try:
             saveDict['n'] = self.n.tolist()

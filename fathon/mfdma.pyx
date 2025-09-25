@@ -1,4 +1,4 @@
-#    dfa.pyx - dfa algorithm of fathon package
+#    mfdma.pyx - mfdma algorithm of fathon package
 #    Copyright (C) 2019-  Stefano Bianchi
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -24,12 +24,11 @@ import ctypes
 import pickle
 
 cdef extern from "cLoops.h" nogil:
-    void flucDFAForwCompute(double *y, double *t, int N, int *wins, int n_wins, int pol_ord, double *f_vec)
-    void flucDFAForwBackwCompute(double *y, double *t, int N, int *wins, int n_wins, int pol_ord, double *f_vec)
-    void flucUDFACompute(double *y_vec, double *t_vec, int y_len, int *wins_vec, int num_wins, int pol, double *f_vec)
+    void flucMFDMAForwCompute(double *y, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
+    void flucMFDMAForwBackwCompute(double *y, int N, int *wins, int n_wins, double *qs, int n_q, int pol_ord, double *f_vec)
 
-cdef class DFA:
-    """Detrended Fluctuation Analysis class.
+cdef class MFDMA:
+    """MultiFractal Detrended Moving Average class.
 
     Parameters
     ----------
@@ -39,6 +38,10 @@ cdef class DFA:
         Time series used for the analysis.
     F : numpy ndarray
         Array containing the values of the fluctuations in each window.
+    listH : numpy ndarray
+        Array containing the values of the slope of the fit at each q-order.
+    qList : numpy ndarray
+        Array containing the values of the q-orders.
     isComputed : bool
         Boolean value to know if `F` has been computed in order to prevent the
         computation of other functions that need `F`.
@@ -46,7 +49,7 @@ cdef class DFA:
 
     cdef:
         np.ndarray n
-        np.ndarray tsVec, F
+        np.ndarray tsVec, F, listH, qList
         bint isComputed
 
     def __init__(self, tsVec):
@@ -55,12 +58,14 @@ cdef class DFA:
                 f = open(tsVec, 'rb')
                 data = pickle.load(f)
                 f.close()
-                if data['kind'] != 'dfa':
-                    raise ValueError('Error: Loaded object is not a DFA object.')
+                if data['kind'] != 'mfdma':
+                    raise ValueError('Error: Loaded object is not a MFDMA object.')
                 else:
                     self.tsVec = np.array(data['tsVec'], dtype=float)
                     self.n = np.array(data['n'], dtype=ctypes.c_int)
                     self.F = np.array(data['F'], dtype=ctypes.c_double)
+                    self.listH = np.array(data['listH'], dtype=ctypes.c_double)
+                    self.qList = np.array(data['qList'], dtype=ctypes.c_double)
                     self.isComputed = data['isComputed']
             else:
                 raise ValueError('Error: Not recognized extension.')
@@ -72,52 +77,56 @@ cdef class DFA:
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.nonecheck(False)
-    cdef cy_flucCompute(self, np.ndarray[np.float64_t, ndim=1, mode='c'] vects, np.ndarray[int, ndim=1, mode='c'] vecn, np.ndarray[np.float64_t, ndim=1, mode='c'] vecf, int polOrd, bint revSeg, bint unbiased):
-        cdef int nLen, tsLen
-        cdef Py_ssize_t i, j
+    cdef cy_computeFlucVec(self, int tsLen, np.ndarray[np.int64_t, ndim=1, mode='c'] winSizes, np.ndarray[np.float64_t, ndim=1, mode='c'] q_list, int polOrd, bint revSeg):
+        cdef Py_ssize_t j
+        cdef int nLen, q_list_len
+        cdef np.ndarray[np.float64_t, ndim=1, mode='c'] mtxf, vects
+        cdef np.ndarray[int, ndim=1, mode='c'] vecn
         cdef np.ndarray[np.float64_t, ndim=1, mode='c'] t
 
+        self.qList = q_list
+        vecn = np.array(winSizes, dtype=ctypes.c_int)
         nLen = len(vecn)
-        tsLen = len(vects)
+        mtxf = np.zeros((len(q_list) * nLen, ), dtype=ctypes.c_double)
+        vects = np.array(self.tsVec, dtype=ctypes.c_double)
+        q_list_len = len(q_list)
         
         t = np.empty((tsLen, ), dtype=ctypes.c_double)
         for j in prange(tsLen, nogil=True):
             t[j] = float(j) + 1.0
         
         with nogil:
-            if unbiased:
-                flucUDFACompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, polOrd, &vecf[0])
+            if revSeg:
+                flucMFDMAForwBackwCompute(&vects[0], tsLen, &vecn[0], nLen, &q_list[0], q_list_len, polOrd, &mtxf[0])
             else:
-                if revSeg:
-                    flucDFAForwBackwCompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, polOrd, &vecf[0])
-                else:
-                    flucDFAForwCompute(&vects[0], &t[0], tsLen, &vecn[0], nLen, polOrd, &vecf[0])
+                flucMFDMAForwCompute(&vects[0], tsLen, &vecn[0], nLen, &q_list[0], q_list_len, polOrd, &mtxf[0])
+                        
+        return vecn, np.reshape(mtxf, (q_list_len, nLen))
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.nonecheck(False)
-    cpdef computeFlucVec(self, np.ndarray[np.int64_t, ndim=1, mode='c'] winSizes, int polOrd=1, bint revSeg=False, bint unbiased=False):
-        """Computation of the fluctuations in each window.
+    def computeFlucVec(self, winSizes, qList, polOrd=1, revSeg=False):
+        """Computation of the fluctuations in each window for each q-order.
 
         Parameters
         ----------
         winSizes : numpy ndarray
             Array of window's sizes.
+        qList : float or iterable or numpy ndarray
+            List of q-orders used to compute `F`.
         polOrd : int, optional
             Order of the polynomial to be fitted in each window (default : 1).
         revSeg : bool, optional
-            If True, the computation of `F` is repeated starting from the end of the time series (default : False).
-        unbiased : bool, optional
-            If True, the unbiased version of DFA is computed, and `revSeg` is ignored. To be used on short time series (default : False).
+            If True, the computation of `F` is repeated starting from the end
+            of the time series (default : False).
 
         Returns
         -------
         numpy ndarray
             Array `n` of window's sizes.
         numpy ndarray
-            Array `F` containing the values of the fluctuations in each window.
+            qxn array `F` containing the values of the fluctuations in each
+            window for each q-order.
         """
-        cdef int tsLen = len(self.tsVec)
+        tsLen = len(self.tsVec)
 
         if polOrd < 1:
             raise ValueError('Error: Polynomial order must be greater than 0.')
@@ -129,9 +138,14 @@ cdef class DFA:
         if winSizes[0] < (polOrd + 2):
             raise ValueError('Error: `winSizes[0]` must be at least equal to {}.'.format(polOrd + 2))
 
-        self.n = np.array(winSizes, dtype=ctypes.c_int)
-        self.F = np.zeros((len(self.n), ), dtype=ctypes.c_double)
-        self.cy_flucCompute(np.array(self.tsVec, dtype=ctypes.c_double), self.n, self.F, polOrd, revSeg, unbiased)
+        if isinstance(qList, float):
+            qList = np.array([qList], dtype=ctypes.c_double)
+        elif isinstance(qList, list) or isinstance(qList, np.ndarray):
+            qList = np.array(qList, dtype=ctypes.c_double)
+        else:
+            raise ValueError('Error: qList type is {}. Expected float, list, or numpy array.'.format(type(qList)))
+            
+        self.n, self.F = self.cy_computeFlucVec(tsLen, winSizes, qList, polOrd, revSeg)
         self.isComputed = True
         
         return self.n, self.F
@@ -144,9 +158,9 @@ cdef class DFA:
         Parameters
         ----------
         nStart : int, optional
-            Size of the smaller window used to fit `F` (default : first value of `n`).
+            Size of the smaller window used to fit `F` at each q-order (default : first value of `n`).
         nEnd : int, optional
-            Size of the bigger window used to fit `F` (default : last value of `n`).
+            Size of the bigger window used to fit `F` at each q-order (default : last value of `n`).
         logBase : float, optional
             Base of the logarithm for the log-log fit of `n` vs `F` (default : e).
         verbose : bool, optional
@@ -154,13 +168,14 @@ cdef class DFA:
 
         Returns
         -------
-        float
-            Slope of the fit.
-        float
-            Intercept of the fit.
+        numpy ndarray
+            Slope of the fit for each q-order.
+        numpy ndarray
+            Intercept of the fit for each q-order.
         """
-        cdef int start, end
-        cdef np.ndarray[np.float64_t, ndim=1, mode='c'] log_fit
+        cdef int start, end, qLen
+        cdef Py_ssize_t i
+        cdef np.ndarray[np.float64_t, ndim=1, mode='c'] log_fit, list_H_intercept
 
         if len(self.n) > 1:
             if self.isComputed:
@@ -173,17 +188,24 @@ cdef class DFA:
                 if (nStart < self.n[0]) or (nEnd > self.n[-1]):
                     raise ValueError('Error: Fit limits must be included in interval [{}, {}].'.format(self.n[0], self.n[-1]))
                 if (nStart not in self.n) or (nEnd not in self.n):
-                    raise ValueError('Error: Fit limits must be included in the window\'s sizes vector.')
+                    raise ValueError('Error: Fit limits must be included in the n vector.')
 
+                qLen = len(self.qList)
                 start = np.where(self.n==nStart)[0][0]
                 end = np.where(self.n==nEnd)[0][0]
-                log_fit = np.polyfit(np.log(self.n[start:end+1]) / np.log(logBase), np.log(self.F[start:end+1]) / np.log(logBase), 1)
-            
+                self.listH = np.zeros((qLen, ), dtype=ctypes.c_double)
+                list_H_intercept = np.zeros((qLen, ), dtype=ctypes.c_double)
                 if verbose:
                     print('Fit limits: [{}, {}]'.format(nStart, nEnd))
-                    print('Fit result: H intercept = {:.2f}, H = {:.2f}'.format(log_fit[1], log_fit[0]))
                 
-                return log_fit[0], log_fit[1]
+                for i in range(qLen):
+                    log_fit = np.polyfit(np.log(self.n[start:end+1]) / np.log(logBase) , np.log(self.F[i, start:end+1]) / np.log(logBase), 1)
+                    self.listH[i] = log_fit[0]
+                    list_H_intercept[i] = log_fit[1]
+                    if verbose:
+                        print('Fit result for q = {:.2f}: H intercept = {:.2f}, H = {:.2f}'.format(self.qList[i], list_H_intercept[i], self.listH[i]))
+                    
+                return self.listH, list_H_intercept
             else:
                 print('Nothing to fit, fluctuations vector has not been computed yet.')
         else:
@@ -192,45 +214,50 @@ cdef class DFA:
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.nonecheck(False)
-    cpdef multiFitFlucVec(self, np.ndarray[np.int64_t, ndim=2, mode='c'] limitsList, float logBase=np.e, bint verbose=False):
-        """Fit of the fluctuations values in different intervals at the same time.
-
-        Parameters
-        ----------
-        limitsList : numpy ndarray
-            kx2 array with the sizes of k starting and ending windows used to fit `F`.
-        logBase : float, optional
-            Base of the logarithm for the log-log fit of `n` vs `F` (default : e).
-        verbose : bool, optional
-            Verbosity (default : False).
+    cpdef computeMassExponents(self):
+        """Computation of the mass exponents tau(q) = q*H(q) - 1.
 
         Returns
         -------
         numpy ndarray
-            Slopes of the fits.
-        numpy ndarray
-            Intercepts of the fits.
+            Mass exponents.
         """
-        cdef Py_ssize_t i
-        cdef int limLen = len(limitsList)
-        cdef np.ndarray[np.float64_t, ndim=1, mode='c'] list_H, list_H_intercept
+        cdef np.ndarray[np.float64_t, ndim=1, mode='c'] tau
 
         if self.isComputed:
-            list_H = np.zeros((limLen, ), dtype=float)
-            list_H_intercept = np.zeros((limLen, ), dtype=float)
+            tau = self.listH * self.qList - 1
             
-            for i in range(limLen):
-                if verbose:
-                    print('----------')
-                list_H[i], list_H_intercept[i] = self.fitFlucVec(nStart=limitsList[i][0], nEnd=limitsList[i][1],
-                                                                 logBase=logBase, verbose=verbose)
-                
-            if verbose:
-                print('----------')
-                
-            return list_H, list_H_intercept
+            return tau
         else:
-            print('Nothing to fit, fluctuations vector has not been computed yet.')
+            print('Cannot compute mass exponents, fluctuations vector has not been computed yet.')
+
+    @cython.boundscheck(False)
+    @cython.nonecheck(False)
+    cpdef computeMultifractalSpectrum(self):
+        """Computation of the multifractal spectrum.
+        alpha(q_i) ≈ d tau / d q  (finite difference on uniform q grid)
+        f(alpha) = q*alpha - tau
+
+        Returns
+        -------
+        numpy ndarray
+            Singularity strengths.
+        numpy ndarray
+            Multifractal spectrum.
+        """
+        cdef np.ndarray[np.float64_t, ndim=1, mode='c'] tau, alpha, mfSpect
+
+        if self.isComputed:
+            if len(self.qList) > 1:
+                tau = self.computeMassExponents()
+                alpha = np.diff(tau) / (self.qList[1] - self.qList[0])
+                mfSpect = self.qList[0:-1] * alpha - tau[0:-1]
+                
+                return alpha, mfSpect
+            else:
+                raise ValueError('Error: Number of q moments must be greater than one to compute multifractal spectrum.')
+        else:
+            print('Cannot compute multifractal spectrum, fluctuations vector has not been computed yet.')
 
     def saveObject(self, outFileName):
         """Save current object state to binary file.
@@ -241,7 +268,7 @@ cdef class DFA:
             Output binary file. `.fathon` extension will be appended to the file name.
         """
         saveDict = {}
-        saveDict['kind'] = 'dfa'
+        saveDict['kind'] = 'mfdma'
         saveDict['tsVec'] = self.tsVec.tolist()
         try:
             saveDict['n'] = self.n.tolist()
@@ -251,9 +278,16 @@ cdef class DFA:
             saveDict['F'] = self.F.tolist()
         except:
             saveDict['F'] = []
+        try:
+            saveDict['listH'] = self.listH.tolist()
+        except:
+            saveDict['listH'] = []
+        try:
+            saveDict['qList'] = self.qList.tolist()
+        except:
+            saveDict['qList'] = []
         saveDict['isComputed'] = self.isComputed
 
         f = open(outFileName + '.fathon', 'wb')
         pickle.dump(saveDict, f)
         f.close()
-

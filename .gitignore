@@ -1,0 +1,14 @@
+fathon/dfa.c
+fathon/dma.c
+fathon/dcca.c
+fathon/ht.c
+fathon/mfdcca.c
+fathon/mfdfa.c
+fathon/mfdma.c
+*.pyc
+__pycache__/
+*.vscode
+*.fathon
+*.so
+*.egg-info/
+/build/

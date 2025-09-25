@@ -215,7 +215,7 @@ cdef class MFDFA:
     @cython.wraparound(False)
     @cython.nonecheck(False)
     cpdef computeMassExponents(self):
-        """Computation of the mass exponents.
+        """Computation of the mass exponents tau(q) = q*H(q) - 1.
 
         Returns
         -------
@@ -235,6 +235,8 @@ cdef class MFDFA:
     @cython.nonecheck(False)
     cpdef computeMultifractalSpectrum(self):
         """Computation of the multifractal spectrum.
+        alpha(q_i) ≈ d tau / d q  (finite difference on uniform q grid)
+        f(alpha) = q*alpha - tau
 
         Returns
         -------
